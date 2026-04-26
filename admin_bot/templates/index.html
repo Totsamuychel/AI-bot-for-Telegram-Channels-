@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель управления AutoPoster CMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, #1e3a8a 0%, transparent 40%),
+                radial-gradient(circle at bottom left, #312e81 0%, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .glass-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn:hover {
+            color: white;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row>div {
+            flex: 1;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2em;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--primary);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #475569;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.6);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            width: auto;
+            margin-right: 0.5rem;
+        }
+
+        .btn-green {
+            background: #10b981;
+        }
+
+        .btn-red {
+            background: #ef4444;
+        }
+
+        .btn-gray {
+            background: #475569;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+
+        .badge-approved {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        /* pending AI gen */
+        .badge-pending_review {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        .badge-ready_to_post {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .badge-posted {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+        }
+
+        .badge-rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        /* Moderation UI */
+        .mod-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .mod-active-post {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--primary);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .mod-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .mod-item {
+            background: rgba(30, 41, 59, 0.5);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mod-item:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--primary);
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #toast.error {
+            background: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Donut inc</h1>
+            <p>Created by Mr_batnik</p>
+        </div>
+
+        <div class="glass-panel">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab(event, 'Dashboard')">🏠 Главная</button>
+                <button class="tab-btn" onclick="openTab(event, 'Settings')">⚙️ Настройки</button>
+                <button class="tab-btn" onclick="openTab(event, 'NewsDB')">📰 База новостей</button>
+                <button class="tab-btn" onclick="openTab(event, 'Moderation')">📝 Модерация постов</button>
+                <button class="tab-btn" onclick="openTab(event, 'Archive')">🗄️ Архив</button>
+                <button class="tab-btn" onclick="openTab(event, 'Analytics')">📊 Аналитика</button>
+            </div>
+
+            <!-- TAB 0: DASHBOARD -->
+            <div id="Dashboard" class="tab-content active">
+                <div class="form-row">
+                    <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
+                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">GPU Load</h3>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: #34d399;" id="gpu-load">--%</div>
+                    </div>
+                    <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
+                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">VRAM Usage</h3>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: #a78bfa;" id="vram-load">--%</div>
+                        <small id="vram-details" style="color: var(--text-muted);">-- / -- MB</small>
+                    </div>
+                    <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
+                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">RAM Usage</h3>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: #60a5fa;" id="ram-load">--%</div>
+                        <small id="ram-details" style="color: var(--text-muted);">-- / -- MB</small>
+                    </div>
+                </div>
+
+                <div class="glass-panel" style="padding: 2rem; margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; border: 2px solid var(--primary);">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                            <h2 style="margin: 0;">⚡ Управление автопостером</h2>
+                            <div id="status-dot" style="width: 15px; height: 15px; border-radius: 50%; background-color: #ef4444; box-shadow: 0 0 10px #ef4444; transition: all 0.3s ease;"></div>
+                        </div>
+                        <p style="color: var(--text-muted);">Запуск/остановка полного цикла публикации новостей.</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-small btn-green" style="padding: 1rem 2.5rem; font-size: 1.1rem;" onclick="setBotState(true)">▶ Старт</button>
+                        <button class="btn btn-small btn-red" style="padding: 1rem 2.5rem; font-size: 1.1rem;" onclick="setBotState(false)">🛑 Стоп</button>
+                    </div>
+                </div>
+
+                <div class="glass-panel" style="padding: 1.5rem; margin-top: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem;">🔌 Загрузить Пресет</h3>
+                    <div style="display: flex; gap: 1rem;">
+                        <select id="preset-select" class="form-control" style="flex: 1;">
+                            <option value="">-- Выберите пресет --</option>
+                        </select>
+                        <button class="btn btn-small btn-green" style="padding: 0 2rem;"
+                            onclick="loadPreset()">Применить</button>
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top: 1.5rem;">
+                    <div class="glass-panel" style="padding: 1.5rem;">
+                        <h3 style="margin-bottom: 1rem;">📡 Подключенные каналы</h3>
+                        <ul id="connected-channels"
+                            style="list-style-type: none; padding: 0; color: #a78bfa; font-weight: 600; line-height: 1.8;">
+                        </ul>
+                    </div>
+                    <div class="glass-panel" style="padding: 1.5rem;">
+                        <h3 style="margin-bottom: 1rem;">🧠 Активные ИИ Модели (Ollama)</h3>
+                        <ul id="active-llm-models"
+                            style="list-style-type: none; padding: 0; color: #fbbf24; font-weight: 600; line-height: 1.8;">
+                            <li>Загрузка...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1: SETTINGS -->
+            <div id="Settings" class="tab-content">
+                <form id="settings-form">
+                    <div style="display: none;">
+                        <input type="checkbox" id="is_active" {% if setting and setting.is_active %}checked{% endif %}>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="llm_source">Источник AI (Текст)</label>
+                            <select id="llm_source" class="form-control" onchange="toggleApiField()">
+                                <option value="ollama" {% if setting and setting.llm_source=='ollama' %}selected{% endif
+                                    %}>Локально (Ollama)</option>
+                                <option value="api" {% if setting and setting.llm_source=='api' %}selected{% endif %}>
+                                    Сторонний API (OpenAI/Anthropic)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="apikey_group"
+                            style="{% if setting and setting.llm_source == 'ollama' %}display:none;{% endif %}">
+                            <label for="api_key">API Ключ</label>
+                            <input type="password" id="api_key" class="form-control"
+                                value="{{ setting.api_key if setting and setting.api_key else '' }}"
+                                placeholder="sk-...">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="model">AI Модель</label>
+                            <select id="model" class="form-control"
+                                data-current="{{ setting.model if setting and setting.model else 'llama3.2' }}">
+                                <option value="{{ setting.model if setting and setting.model else 'llama3.2' }}">{{
+                                    setting.model if setting and setting.model else 'llama3.2' }} (текущая)</option>
+                            </select>
+                            <small id="model_hint"
+                                style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem;">Укажите
+                                вручную, если используете API (напр. gpt-4o).</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="schedule_interval">Интервал публикации (в минутах)</label>
+                            <input type="number" id="schedule_interval" class="form-control"
+                                value="{{ setting.schedule_interval if setting else '60' }}" min="1">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="language">Язык поста</label>
+                            <select id="language" class="form-control">
+                                <option value="RU" {% if setting and setting.language=='RU' %}selected{% endif %}>
+                                    Русский</option>
+                                <option value="EN" {% if setting and setting.language=='EN' %}selected{% endif %}>
+                                    English</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="post_style">Стиль написания</label>
+                            <select id="post_style" class="form-control">
+                                <option value="informative" {% if setting and setting.post_style=='informative'
+                                    %}selected{% endif %}>Информативный</option>
+                                <option value="casual" {% if setting and setting.post_style=='casual' %}selected{% endif
+                                    %}>Свободный / Как блогер</option>
+                                <option value="clickbait" {% if setting and setting.post_style=='clickbait' %}selected{%
+                                    endif %}>Клипабельный / Эмоциональный</option>
+                                <option value="formal" {% if setting and setting.post_style=='formal' %}selected{% endif
+                                    %}>Сухой / Формальный</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="display:none;">
+                        <!-- Hidden images setting for MVP -->
+                        <input type="hidden" id="image_source" value="none">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prompt">Доп. Системный Промпт (Инструкция)</label>
+                        <textarea id="prompt" class="form-control"
+                            placeholder="Оформи эту новость красиво...">{{ setting.prompt if setting else '' }}</textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="target_channels">ID Каналов для публикации (JSON массив)</label>
+                            <input type="text" id="target_channels" class="form-control"
+                                value="{{ setting.target_channels if setting and setting.target_channels else '[]' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="extra_admins">Доп. Админы (ID)</label>
+                            <input type="text" id="extra_admins" class="form-control"
+                                value="{{ setting.extra_admins if setting and setting.extra_admins else '[]' }}">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button type="button" class="btn" id="save-btn" onclick="saveSettingsGlobal()">💾 Сохранить
+                            настройки конфигурации</button>
+                        <button type="button" class="btn btn-gray" onclick="saveAsPreset()">+ Сохранить как
+                            Пресет</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TAB 2: NEWS DB -->
+            <div id="NewsDB" class="tab-content">
+                <div class="switch-container">
+                    <div>
+                        <h3 style="margin-bottom: 0.2rem;">Авто-пропуск новостей к ИИ</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Если включено, ИИ сам забирает свежие
+                            "сырые" новости на генерацию текста.</p>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="auto_approve_news" onchange="saveSettingsGlobal()"
+                            {% if setting and setting.auto_approve_news %}checked{% endif %}><span
+                            class="slider"></span></label>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Сырые новости (Источники)</h2>
+                    <div>
+                        <button class="btn btn-small btn-gray" onclick="forceScrape()">⚡ Запустить парсер</button>
+                        <button class="btn btn-small btn-red" onclick="clearNewsDatabase()">🗑 Очистить базу</button>
+                        <button class="btn btn-small" onclick="fetchNewsList()">🔄 Обновить</button>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="news-table">
+                        <thead>
+                            <tr>
+                                <th>Статус</th>
+                                <th>Заголовок (Источник)</th>
+                                <th>Дата</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="news-body">
+                            <tr>
+                                <td colspan="4" style="text-align:center;">Загрузка...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 3: MODERATION -->
+            <div id="Moderation" class="tab-content">
+                <div class="switch-container" style="border-color: #10b981;">
+                    <div>
+                        <h3 style="margin-bottom: 0.2rem;">Авто-публикация готовых постов</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Если включено, посты сразу отправляются
+                            в Телеграм, **МИНУЯ** эту модерацию.</p>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="auto_post" onchange="saveSettingsGlobal()" {% if
+                            setting and setting.auto_post %}checked{% endif %}><span class="slider"></span></label>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Очередь модерации</h2>
+                    <button class="btn btn-small" style="width: 200px;" onclick="fetchNewsList()">🔄 Обновить</button>
+                </div>
+
+                <div class="mod-layout" id="mod-layout-container">
+                    <div style="text-align: center; color: var(--text-muted); padding: 3rem;">Загрузка...</div>
+                </div>
+            </div>
+
+            <!-- TAB 4: ARCHIVE -->
+            <div id="Archive" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Архив постов</h2>
+                    <button class="btn btn-small" style="width: 200px;" onclick="fetchNewsList()">🔄 Обновить
+                        таблицу</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="archive-table">
+                        <thead>
+                            <tr>
+                                <th>Статус</th>
+                                <th>Заголовок</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archive-body">
+                            <tr>
+                                <td colspan="3" style="text-align:center;">Загрузка...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 5: ANALYTICS -->
+            <div id="Analytics" class="tab-content">
+                <div class="form-row">
+                    <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
+                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">Всего сгенерировано</h3>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: #a78bfa;" id="stat-total">0</div>
+                    </div>
+                    <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
+                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">Опубликовано</h3>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: #10b981;" id="stat-posted">0</div>
+                    </div>
+                    <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
+                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">Отклонено</h3>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: #ef4444;" id="stat-rejected">0</div>
+                    </div>
+                </div>
+
+                <div class="glass-panel" style="margin-top: 1.5rem; padding: 1.5rem; border-left: 4px solid #fbbf24;">
+                    <h3 style="margin-bottom: 1rem;">Просмотры и ER (Ограничения Telegram API)</h3>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+                        ⚠️ <strong>Внимание:</strong> Стандартный Telegram Bot API <b>не имеет методов</b> для получения количества просмотров сообщений в каналах. Для реализации реальных дашбордов с пересылками (Forwards), ER (Engagement Rate) и просмотрами необходимо авторизовать клиентское приложение (Userbot) через MTProto, например с помощью <code>Pyrogram</code> или <code>Telethon</code>, работающее параллельно с этим ботом. То, что вы видите ниже - это базовая статистика работы нейросети в системе.
+                    </p>
+                </div>
+
+                <div class="glass-panel" style="margin-top: 1.5rem; padding: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem;">📈 Публикации за последние 7 дней</h3>
+                    <div style="height: 300px; width: 100%;">
+                        <canvas id="analyticsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">Действие выполнено!</div>
+
+    <script>
+        let pollingInterval = null;
+        let analyticsChartInst = null;
+
+        function updateStatusDot(isActive) {
+            const dot = document.getElementById('status-dot');
+            if (dot) {
+                const color = isActive ? '#10b981' : '#ef4444'; // Green or Red
+                dot.style.backgroundColor = color;
+                dot.style.boxShadow = `0 0 10px ${color}`;
+            }
+        }
+
+        async function setBotState(isActive) {
+            const dot = document.getElementById('status-dot');
+            if (dot) {
+                dot.style.backgroundColor = '#fbbf24'; // Yellow
+                dot.style.boxShadow = '0 0 10px #fbbf24';
+            }
+            document.getElementById('is_active').checked = isActive;
+            await saveSettingsGlobal();
+        }
+
+        async function fetchSystemStats() {
+            try {
+                const res = await fetch('/api/system/stats');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('gpu-load').textContent = data.gpu + '%';
+                    document.getElementById('vram-load').textContent = data.vram_percent + '%';
+                    document.getElementById('vram-details').textContent = data.vram_used_mb.toFixed(0) + ' / ' + data.vram_total_mb.toFixed(0) + ' MB';
+                    if (document.getElementById('ram-load')) {
+                        document.getElementById('ram-load').textContent = data.ram_percent + '%';
+                        document.getElementById('ram-details').textContent = data.ram_used_mb.toFixed(0) + ' / ' + data.ram_total_mb.toFixed(0) + ' MB';
+                    }
+                }
+            } catch (e) { }
+        }
+
+        async function fetchActiveModels() {
+            try {
+                const res = await fetch('/api/system/ollama_active');
+                if (res.ok) {
+                    const data = await res.json();
+                    const ul = document.getElementById('active-llm-models');
+                    ul.innerHTML = '';
+                    if (!data.models || data.models.length === 0) {
+                        ul.innerHTML = '<li style="color: var(--text-muted); font-weight: normal;">Нет активных моделей</li>';
+                    } else {
+                        data.models.forEach(m => {
+                            ul.innerHTML += `<li>⚡ ${m}</li>`;
+                        });
+                    }
+                }
+            } catch (e) { }
+        }
+
+        async function fetchPresets() {
+            try {
+                const res = await fetch('/api/presets');
+                if (res.ok) {
+                    const data = await res.json();
+                    const sel = document.getElementById('preset-select');
+                    sel.innerHTML = '<option value="">-- Выберите пресет --</option>';
+                    data.presets.forEach(p => {
+                        sel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+                    });
+                }
+            } catch (e) { }
+        }
+
+        async function saveAsPreset() {
+            const name = prompt("Введите название нового пресета:");
+            if (!name) return;
+            try {
+                await saveSettingsGlobal(); // save current settings first
+                const res = await fetch('/api/presets', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+                if (res.ok) {
+                    showToast('Пресет сохранен!');
+                    fetchPresets();
+                } else {
+                    showToast('Ошибка сохранения пресета', true);
+                }
+            } catch (e) { }
+        }
+
+        async function loadPreset() {
+            const val = document.getElementById('preset-select').value;
+            if (!val) { showToast('Выберите пресет из списка', true); return; }
+            if (!confirm("Загрузить пресет? Это перезапишет текущие настройки.")) return;
+            try {
+                const res = await fetch(`/api/presets/load/${val}`, { method: 'POST' });
+                if (res.ok) {
+                    showToast('Пресет применен! Обновляю страницу...');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('Ошибка загрузки', true);
+                }
+            } catch (e) { }
+        }
+
+        function updateConnectedChannels() {
+            try {
+                let channelsStr = document.getElementById('target_channels').value;
+                let channels = JSON.parse(channelsStr);
+                const ul = document.getElementById('connected-channels');
+                ul.innerHTML = '';
+                if (!Array.isArray(channels) || channels.length === 0) {
+                    ul.innerHTML = '<li style="color: var(--text-muted); font-weight: normal;">Нет каналов</li>';
+                } else {
+                    channels.forEach(ch => {
+                        ul.innerHTML += `<li>📡 ID: ${ch}</li>`;
+                    });
+                }
+            } catch (e) { }
+        }
+
+        function startDashboardPolling() {
+            fetchSystemStats();
+            fetchActiveModels();
+            fetchPresets();
+            updateConnectedChannels();
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = setInterval(() => {
+                fetchSystemStats();
+                fetchActiveModels();
+            }, 3000);
+        }
+
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) { tabcontent[i].className = tabcontent[i].className.replace(" active", ""); }
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); }
+            document.getElementById(tabName).className += " active";
+            evt.currentTarget.className += " active";
+            if (tabName === 'NewsDB' || tabName === 'Moderation' || tabName === 'Archive') fetchNewsList();
+        }
+
+        async function forceScrape() {
+            try {
+                showToast('Запускаем парсер, подождите...', false);
+                const res = await fetch('/api/force_scrape', { method: 'POST' });
+                if (res.ok) { showToast('Парсер успешно отработал!'); fetchNewsList(); }
+                else showToast('Ошибка запуска парсера', true);
+            } catch (e) { showToast('Ошибка сети', true); }
+        }
+
+        async function clearNewsDatabase() {
+            if (!confirm("Вы уверены? Это УДАЛИТ ВСЕ НОВОСТИ из базы (включая архив и неопубликованные). Отменить нельзя!")) return;
+            try {
+                const res = await fetch('/api/news/all', { method: 'DELETE' });
+                if (res.ok) { showToast('База полностью очищена!'); fetchNewsList(); }
+                else showToast('Ошибка очистки', true);
+            } catch (e) { showToast('Ошибка сети', true); }
+        }
+
+        function toggleApiField() {
+            const llm = document.getElementById('llm_source').value;
+            document.getElementById('apikey_group').style.display = llm === 'api' ? 'block' : 'none';
+        }
+
+        async function fetchModels() {
+            try {
+                const res = await fetch('/api/models');
+                const data = await res.json();
+                if (data.models && data.models.length > 0) {
+                    const select = document.getElementById('model');
+                    const currentValue = select.getAttribute('data-current');
+                    select.innerHTML = '';
+                    data.models.forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = m; opt.textContent = m;
+                        if (m === currentValue) opt.selected = true;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) { console.error("Failed to fetch models", e); }
+        }
+        async function fetchSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                document.getElementById('prompt').value = data.prompt || '';
+                document.getElementById('model').setAttribute('data-current', data.model || '');
+                document.getElementById('schedule_interval').value = data.schedule_interval || 60;
+                document.getElementById('is_active').checked = data.is_active;
+                updateStatusDot(data.is_active);
+                document.getElementById('auto_post').checked = data.auto_post;
+                document.getElementById('auto_approve_news').checked = data.auto_approve_news;
+                document.getElementById('llm_source').value = data.llm_source || 'ollama';
+                document.getElementById('api_key').value = data.api_key || '';
+                document.getElementById('language').value = data.language || 'ru';
+                document.getElementById('post_style').value = data.post_style || 'formal';
+                document.getElementById('image_source').value = data.image_source || 'none';
+                document.getElementById('extra_admins').value = data.extra_admins || '';
+                document.getElementById('target_channels').value = data.target_channels || '[]';
+                toggleApiField();
+                updateConnectedChannels();
+            } catch (e) { console.error("Failed to fetch settings", e); }
+        }
+        fetchSettings();
+        fetchNewsList();
+        fetchModels();
+        toggleApiField();
+        startDashboardPolling();
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message; toast.className = isError ? 'show error' : 'show';
+            setTimeout(() => { toast.className = ''; }, 3000);
+        }
+
+        async function saveSettingsGlobal() {
+            const btn = document.getElementById('save-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Сохранение...'; btn.disabled = true;
+
+            const payload = {
+                channel_id: null,
+                prompt: document.getElementById('prompt').value,
+                model: document.getElementById('model').value,
+                schedule_interval: parseInt(document.getElementById('schedule_interval').value),
+                is_active: document.getElementById('is_active').checked,
+                auto_post: document.getElementById('auto_post').checked,
+                auto_approve_news: document.getElementById('auto_approve_news').checked,
+                llm_source: document.getElementById('llm_source').value,
+                api_key: document.getElementById('api_key').value,
+                language: document.getElementById('language').value,
+                post_style: document.getElementById('post_style').value,
+                image_source: document.getElementById('image_source').value,
+                extra_admins: document.getElementById('extra_admins').value,
+                target_channels: document.getElementById('target_channels').value
+            };
+
+            try {
+                const res = await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (res.ok) showToast('Настройки успешно сохранены!');
+                else showToast('Ошибка при сохранении!', true);
+            } catch (err) { showToast('Ошибка соединения!', true); }
+            finally { btn.textContent = originalText; btn.disabled = false; }
+        }
+
+        let globalNewsData = [];
+        let currentlyEditingModId = null;
+
+        async function fetchNewsList() {
+            try {
+                const res = await fetch('/api/news');
+                const data = await res.json();
+                globalNewsData = data.articles;
+                renderNewsTable();
+                renderModerationTab();
+            } catch (e) {
+                console.error(e);
+                showToast('Ошибка загрузки данных', true);
+            }
+        }
+
+        function renderNewsTable() {
+            const tbody = document.getElementById('news-body');
+            tbody.innerHTML = '';
+            const tbodyArch = document.getElementById('archive-body');
+            if (tbodyArch) tbodyArch.innerHTML = '';
+
+            // Only show raw or waiting news here, skip pending_review and archive
+            const articlesForTable = globalNewsData.filter(a => !['pending_review', 'posted', 'rejected'].includes(a.status));
+            const articlesForArchive = globalNewsData.filter(a => ['posted', 'rejected'].includes(a.status));
+
+            if (articlesForTable.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">Нет новостей в базе.</td></tr>';
+            } else {
+                articlesForTable.forEach(a => {
+                    let badgeClass = 'badge-pending'; let badgeText = 'Сырая';
+                    if (a.status === 'approved') { badgeClass = 'badge-approved'; badgeText = 'Ждет генерации ИИ'; }
+                    if (a.status === 'ready_to_post') { badgeClass = 'badge-ready_to_post'; badgeText = 'Одобрено. В очереди'; }
+
+                    const tr = document.createElement('tr');
+
+                    let actionsHtml = '';
+                    if (a.status === 'pending') {
+                        actionsHtml += `<button class="btn btn-small btn-green" onclick="updateNewsStatus(${a.id}, 'approved')">В работу ИИ ⚡</button>`;
+                    }
+                    actionsHtml += `<button class="btn btn-small btn-red" onclick="deleteNews(${a.id})">Удалить</button>`;
+
+                    tr.innerHTML = `
+                        <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                        <td><a href="${a.url}" target="_blank" style="color:#60a5fa; text-decoration:none;"><strong>${a.title.substring(0, 80)}${a.title.length > 80 ? '...' : ''}</strong></a><br><small style="color:var(--text-muted);">${a.source || 'Источник'}</small></td>
+                        <td>${new Date(a.created_at).toLocaleString()}</td>
+                        <td>${actionsHtml}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            if (tbodyArch) {
+                if (articlesForArchive.length === 0) {
+                    tbodyArch.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#94a3b8;">Архив пуст.</td></tr>';
+                } else {
+                    articlesForArchive.forEach(a => {
+                        let badgeClass = a.status === 'posted' ? 'badge-posted' : 'badge-rejected';
+                        let badgeText = a.status === 'posted' ? 'Опубликовано' : 'Удалено';
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                            <td><a href="${a.url}" target="_blank" style="color:#60a5fa; text-decoration:none;"><strong>${a.title.substring(0, 80)}${a.title.length > 80 ? '...' : ''}</strong></a></td>
+                            <td>${new Date(a.created_at).toLocaleString()}</td>
+                        `;
+                        tbodyArch.appendChild(tr);
+                    });
+                }
+            }
+        }
+
+        function renderModerationTab() {
+            const container = document.getElementById('mod-layout-container');
+            const pendingPosts = globalNewsData.filter(a => a.status === 'pending_review');
+
+            if (pendingPosts.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 3rem; background: rgba(15, 23, 42, 0.4); border-radius: 16px;">Пока нет сгенерированных постов ожидающих модерации.</div>';
+                return;
+            }
+
+            // By default, open the first post, or the currently selected one if it still exists
+            let activePost = pendingPosts[0];
+            if (currentlyEditingModId) {
+                const found = pendingPosts.find(p => p.id === currentlyEditingModId);
+                if (found) activePost = found;
+            }
+            currentlyEditingModId = activePost.id;
+
+            const otherPosts = pendingPosts.filter(p => p.id !== activePost.id);
+
+            let html = `
+                <div class="mod-active-post">
+                    <h3 style="margin-bottom: 0.5rem; color: #60a5fa;">${activePost.title}</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;"><a href="${activePost.url}" target="_blank" style="color:var(--text-muted);">Перейти к оригиналу новости ↗</a></p>
+                    <textarea id="mod-editor" class="form-control" style="min-height: 350px; font-size: 1.1rem; margin-bottom: 1.5rem;">${activePost.generated_text || ''}</textarea>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button class="btn btn-small btn-red" onclick="updateNewsData(${activePost.id}, 'rejected')">В мусор</button>
+                        <button class="btn btn-small btn-green" style="font-size: 1.1rem; padding: 0.8rem 1.5rem;" onclick="saveActiveModeration(${activePost.id})">✅ Одобрить к публикации</button>
+                    </div>
+                </div>
+            `;
+
+            if (otherPosts.length > 0) {
+                html += `<h3 style="margin-top: 1rem;">В очереди (${otherPosts.length}):</h3><div class="mod-list">`;
+                otherPosts.forEach(p => {
+                    html += `
+                        <div class="mod-item" onclick="selectModPost(${p.id})">
+                            <div style="flex:1;">
+                                <strong style="display:block; margin-bottom: 0.3rem;">${p.title}</strong>
+                                <small style="color: var(--text-muted);">${p.generated_text ? p.generated_text.substring(0, 80) : ''}...</small>
+                            </div>
+                            <span class="badge badge-pending_review">Ожидает</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function selectModPost(id) {
+            currentlyEditingModId = id;
+            renderModerationTab();
+            window.scrollTo({ top: document.getElementById('mod-layout-container').offsetTop - 50, behavior: 'smooth' });
+        }
+
+        async function saveActiveModeration(id) {
+            const text = document.getElementById('mod-editor').value;
+            await updateNewsData(id, 'ready_to_post', text);
+        }
+
+        async function updateNewsStatus(id, newStatus) {
+            await updateNewsData(id, newStatus, null);
+        }
+
+        async function updateNewsData(id, newStatus, textDataStr = null) {
+            let payload = { status: newStatus };
+            if (textDataStr !== null) payload.generated_text = textDataStr;
+
+            try {
+                const res = await fetch(`/api/news/${id}`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showToast('Успешно обновлено!');
+                    if (currentlyEditingModId === id) currentlyEditingModId = null; // Clear active if we just approved it
+                    fetchNewsList(); // Re-fetch to update all views
+                } else showToast('Ошибка при обновлении', true);
+            } catch (e) { showToast('Ошибка сети', true); }
+        }
+
+        async function deleteNews(id) {
+            if (!confirm("Удалить новость навсегда?")) return;
+            try {
+                const res = await fetch(`/api/news/${id}`, { method: 'DELETE' });
+                if (res.ok) fetchNewsList();
+            } catch (e) { showToast('Ошибка удаления', true); }
+        }
+    </script>
+</body>
+
+</html>

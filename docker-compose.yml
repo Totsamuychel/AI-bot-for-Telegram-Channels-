@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  ollama_service:
+    build: ./ollama_service
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
+
+  image_service:
+    build: ./image_service
+    ports:
+      - "8001:8001"
+
+  news_aggregator:
+    build: ./news_aggregator
+    ports:
+      - "8002:8002"
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=n8n_user
+      - POSTGRES_PASSWORD=n8n_password
+      - POSTGRES_DB=n8n_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: always
+
+  admin_bot:
+    build: ./admin_bot
+    ports:
+      - "8003:8000"
+    environment:
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - ADMIN_IDS=${ADMIN_IDS}
+      - DATABASE_URL=postgresql+asyncpg://n8n_user:n8n_password@db/n8n_db
+    depends_on:
+      - db
+    # restart: always
+
+volumes:
+  ollama_data:
+  pg_data:

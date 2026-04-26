@@ -1,0 +1,10 @@
+
+
+# Auto-added by script
+.env
+.env.*
+*.db
+credentials/
+venv/
+ENV/
+__pycache__/

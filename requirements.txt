@@ -1,0 +1,9 @@
+aiogram>=3.4.0
+asyncpg>=0.29.0
+sqlalchemy>=2.0.29
+greenlet>=3.0.3
+fastapi>=0.104.1
+uvicorn>=0.23.2
+jinja2>=3.1.2
+httpx>=0.25.0
+pydantic>=2.4.2
