@@ -13,6 +13,38 @@ The primary objective of this project is to create a **fully autonomous auto-pos
 
 ---
 
+## 🗺️ Architecture Diagram
+
+```mermaid
+graph TD
+    RSS[📰 RSS Feeds / News Sources] --> AGG
+
+    subgraph Services
+        AGG[news_aggregator\nPort 8002]
+        LLM[ollama_service\nPort 8000\nLlama 3 / Mistral]
+        IMG[image_service\nPort 8001\nImage Generation]
+        ADMIN[admin_bot\nPort 8003\nTelegram Admin]
+    end
+
+    AGG -->|Raw article title + description| LLM
+    LLM -->|Structured post JSON + image prompt| IMG
+    LLM -->|Post content + hashtags| DB
+
+    IMG -->|Generated image| DB
+    DB[(🗄️ PostgreSQL\ndb)]
+
+    DB -->|Pending posts| ADMIN
+    ADMIN -->|Approve / Edit / Reject| TG[📢 Telegram Channel]
+
+    N8N[⚙️ n8n Orchestrator] -.->|REST API calls| AGG
+    N8N -.->|REST API calls| LLM
+    N8N -.->|REST API calls| IMG
+
+    OLLAMA[🦙 Ollama Host\nor API Provider] --> LLM
+```
+
+---
+
 ## 🏗 System Architecture
 
 The project is composed of several independent microservices that can work together via n8n or directly:
