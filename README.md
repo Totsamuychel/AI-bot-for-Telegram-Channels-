@@ -1,4 +1,4 @@
-# 🤖 AI-bot-for-Telegram-Channels (n8n Services)
+# 🤖 AI-bot-for-Telegram-Channels 
 
 A comprehensive microservice ecosystem designed for autonomous Telegram channel management. The system automatically fetches news, processes it using Large Language Models (LLM) — either local or via API — and prepares content for publication, including AI-generated imagery.
 
@@ -17,30 +17,20 @@ The primary objective of this project is to create a **fully autonomous auto-pos
 
 ```mermaid
 graph TD
-    RSS[📰 RSS Feeds / News Sources] --> AGG
+    RSS[📰 RSS Feeds / News Sources] --> AGG[news_aggregator<br/>Port 8002]
 
-    subgraph Services
-        AGG[news_aggregator\nPort 8002]
-        LLM[ollama_service\nPort 8000\nLlama 3 / Mistral]
-        IMG[image_service\nPort 8001\nImage Generation]
-        ADMIN[admin_bot\nPort 8003\nTelegram Admin]
-    end
+    AGG -->|Parsed news articles| DB[(🗄️ PostgreSQL<br/>db)]
 
-    AGG -->|Raw article title + description| LLM
-    LLM -->|Structured post JSON + image prompt| IMG
-    LLM -->|Post content + hashtags| DB
+    DB -->|Raw news for processing| LLM[ollama_service<br/>Port 8000<br/>Llama 3 / Mistral]
+    OLLAMA[🦙 Ollama Host<br/>or API Provider] --> LLM
+
+    LLM -->|Generated post JSON + image prompt| DB
+    DB -->|Image prompt / post data| IMG[image_service<br/>Port 8001<br/>Image Generation]
 
     IMG -->|Generated image| DB
-    DB[(🗄️ PostgreSQL\ndb)]
+    DB -->|Posts queue / moderation data| WEB[💻 Website Admin Panel]
 
-    DB -->|Pending posts| ADMIN
-    ADMIN -->|Approve / Edit / Reject| TG[📢 Telegram Channel]
-
-    N8N[⚙️ n8n Orchestrator] -.->|REST API calls| AGG
-    N8N -.->|REST API calls| LLM
-    N8N -.->|REST API calls| IMG
-
-    OLLAMA[🦙 Ollama Host\nor API Provider] --> LLM
+    WEB -->|Approve / Edit / Publish| TG[📢 Telegram Channel]
 ```
 
 ---
