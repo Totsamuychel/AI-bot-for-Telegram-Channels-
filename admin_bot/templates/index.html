@@ -408,8 +408,9 @@
                 <button class="tab-btn active" onclick="openTab(event, 'Dashboard')">🏠 Главная</button>
                 <button class="tab-btn" onclick="openTab(event, 'Settings')">⚙️ Настройки</button>
                 <button class="tab-btn" onclick="openTab(event, 'NewsDB')">📰 База новостей</button>
-                <button class="tab-btn" onclick="openTab(event, 'Moderation')">📝 Модерация постов</button>
+                <button class="tab-btn" onclick="openTab(event, 'Moderation')">📝 Модерация</button>
                 <button class="tab-btn" onclick="openTab(event, 'Archive')">🗄️ Архив</button>
+                <button class="tab-btn" onclick="openTab(event, 'Workers')">🖥️ Воркеры</button>
                 <button class="tab-btn" onclick="openTab(event, 'Analytics')">📊 Аналитика</button>
             </div>
 
@@ -479,43 +480,78 @@
                 <form id="settings-form">
                     <div style="display: none;">
                         <input type="checkbox" id="is_active" {% if setting and setting.is_active %}checked{% endif %}>
+                        <input type="hidden" id="image_source" value="none">
                     </div>
 
+                    <!-- LLM Provider -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="llm_source">Источник AI (Текст)</label>
+                            <label for="llm_source">Источник AI</label>
                             <select id="llm_source" class="form-control" onchange="toggleApiField()">
-                                <option value="ollama" {% if setting and setting.llm_source=='ollama' %}selected{% endif
-                                    %}>Локально (Ollama)</option>
-                                <option value="api" {% if setting and setting.llm_source=='api' %}selected{% endif %}>
-                                    Сторонний API (OpenAI/Anthropic)</option>
+                                <option value="ollama" {% if setting and setting.llm_source=='ollama' %}selected{% endif %}>Ollama (локально)</option>
+                                <option value="openai" {% if setting and setting.llm_source=='openai' %}selected{% endif %}>OpenAI</option>
+                                <option value="openrouter" {% if setting and setting.llm_source=='openrouter' %}selected{% endif %}>OpenRouter</option>
+                                <option value="anthropic" {% if setting and setting.llm_source=='anthropic' %}selected{% endif %}>Anthropic Claude</option>
+                                <option value="gemini" {% if setting and setting.llm_source=='gemini' %}selected{% endif %}>Google Gemini</option>
                             </select>
                         </div>
-                        <div class="form-group" id="apikey_group"
-                            style="{% if setting and setting.llm_source == 'ollama' %}display:none;{% endif %}">
+                        <div class="form-group" id="apikey_group" style="{% if not setting or setting.llm_source == 'ollama' %}display:none;{% endif %}">
                             <label for="api_key">API Ключ</label>
-                            <input type="password" id="api_key" class="form-control"
-                                value="{{ setting.api_key if setting and setting.api_key else '' }}"
-                                placeholder="sk-...">
+                            <input type="password" id="api_key" class="form-control" value="" placeholder="sk-... / ant-... / AIza...">
                         </div>
                     </div>
 
+                    <!-- Base URL (OpenAI / OpenRouter only) -->
+                    <div class="form-group" id="apibase_group" style="{% if not setting or setting.llm_source not in ('openai','openrouter') %}display:none;{% endif %}">
+                        <label for="api_base_url">API Base URL <small style="color:var(--text-muted);">(оставьте пустым для дефолтного)</small></label>
+                        <input type="text" id="api_base_url" class="form-control"
+                            value="{{ setting.api_base_url if setting and setting.api_base_url else '' }}"
+                            placeholder="https://openrouter.ai/api/v1">
+                    </div>
+
+                    <!-- Model + Schedule -->
                     <div class="form-row">
                         <div class="form-group">
                             <label for="model">AI Модель</label>
-                            <select id="model" class="form-control"
-                                data-current="{{ setting.model if setting and setting.model else 'llama3.2' }}">
-                                <option value="{{ setting.model if setting and setting.model else 'llama3.2' }}">{{
-                                    setting.model if setting and setting.model else 'llama3.2' }} (текущая)</option>
+                            <!-- Ollama: select from API; others: type-in with datalist -->
+                            <select id="model_select" class="form-control"
+                                data-current="{{ setting.model if setting and setting.model else 'llama3.2' }}"
+                                style="{% if setting and setting.llm_source and setting.llm_source != 'ollama' %}display:none;{% endif %}">
+                                <option value="{{ setting.model if setting and setting.model else 'llama3.2' }}">
+                                    {{ setting.model if setting and setting.model else 'llama3.2' }} (текущая)
+                                </option>
                             </select>
-                            <small id="model_hint"
-                                style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem;">Укажите
-                                вручную, если используете API (напр. gpt-4o).</small>
+                            <input type="text" id="model_text" class="form-control"
+                                value="{{ setting.model if setting and setting.model else '' }}"
+                                placeholder="gpt-4o / claude-sonnet-4-6 / gemini-1.5-flash"
+                                style="{% if not setting or setting.llm_source == 'ollama' %}display:none;{% endif %}">
+                            <small id="model_hint" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem;"></small>
                         </div>
+
+                        <!-- Schedule mode toggle -->
                         <div class="form-group">
-                            <label for="schedule_interval">Интервал публикации (в минутах)</label>
-                            <input type="number" id="schedule_interval" class="form-control"
-                                value="{{ setting.schedule_interval if setting else '60' }}" min="1">
+                            <label>Режим расписания</label>
+                            <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+                                <button type="button" id="btn_mode_interval"
+                                    class="btn btn-small {% if not setting or not setting.schedule_mode or setting.schedule_mode == 'interval' %}btn-green{% else %}btn-gray{% endif %}"
+                                    onclick="setScheduleMode('interval')">⚡ Интервал</button>
+                                <button type="button" id="btn_mode_weekly"
+                                    class="btn btn-small {% if setting and setting.schedule_mode == 'weekly' %}btn-green{% else %}btn-gray{% endif %}"
+                                    onclick="setScheduleMode('weekly')">📅 По дням</button>
+                            </div>
+                            <input type="hidden" id="schedule_mode" value="{{ setting.schedule_mode if setting and setting.schedule_mode else 'interval' }}">
+
+                            <div id="interval_section" style="{% if setting and setting.schedule_mode == 'weekly' %}display:none;{% endif %}">
+                                <input type="number" id="schedule_interval" class="form-control"
+                                    value="{{ setting.schedule_interval if setting else '60' }}" min="1"
+                                    placeholder="Интервал (минуты)">
+                                <small style="color:var(--text-muted); font-size:0.8rem;">Минут между публикациями</small>
+                            </div>
+
+                            <div id="weekly_section" style="{% if not setting or setting.schedule_mode != 'weekly' %}display:none;{% endif %}">
+                                <div id="schedule-grid" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+                                <small style="color:var(--text-muted); font-size:0.8rem; margin-top:0.4rem; display:block;">Время UTC. Окно публикации — 2 минуты после слота.</small>
+                            </div>
                         </div>
                     </div>
 
@@ -523,41 +559,29 @@
                         <div class="form-group">
                             <label for="language">Язык поста</label>
                             <select id="language" class="form-control">
-                                <option value="RU" {% if setting and setting.language=='RU' %}selected{% endif %}>
-                                    Русский</option>
-                                <option value="EN" {% if setting and setting.language=='EN' %}selected{% endif %}>
-                                    English</option>
+                                <option value="RU" {% if setting and setting.language=='RU' %}selected{% endif %}>Русский</option>
+                                <option value="EN" {% if setting and setting.language=='EN' %}selected{% endif %}>English</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="post_style">Стиль написания</label>
                             <select id="post_style" class="form-control">
-                                <option value="informative" {% if setting and setting.post_style=='informative'
-                                    %}selected{% endif %}>Информативный</option>
-                                <option value="casual" {% if setting and setting.post_style=='casual' %}selected{% endif
-                                    %}>Свободный / Как блогер</option>
-                                <option value="clickbait" {% if setting and setting.post_style=='clickbait' %}selected{%
-                                    endif %}>Клипабельный / Эмоциональный</option>
-                                <option value="formal" {% if setting and setting.post_style=='formal' %}selected{% endif
-                                    %}>Сухой / Формальный</option>
+                                <option value="informative" {% if setting and setting.post_style=='informative' %}selected{% endif %}>Информативный</option>
+                                <option value="casual" {% if setting and setting.post_style=='casual' %}selected{% endif %}>Свободный / Блогер</option>
+                                <option value="clickbait" {% if setting and setting.post_style=='clickbait' %}selected{% endif %}>Клипабельный / Эмоциональный</option>
+                                <option value="formal" {% if setting and setting.post_style=='formal' %}selected{% endif %}>Сухой / Формальный</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="form-group" style="display:none;">
-                        <!-- Hidden images setting for MVP -->
-                        <input type="hidden" id="image_source" value="none">
-                    </div>
-
                     <div class="form-group">
-                        <label for="prompt">Доп. Системный Промпт (Инструкция)</label>
-                        <textarea id="prompt" class="form-control"
-                            placeholder="Оформи эту новость красиво...">{{ setting.prompt if setting else '' }}</textarea>
+                        <label for="prompt">Системный промпт (инструкция для ИИ)</label>
+                        <textarea id="prompt" class="form-control" placeholder="Оформи эту новость красиво...">{{ setting.prompt if setting else '' }}</textarea>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="target_channels">ID Каналов для публикации (JSON массив)</label>
+                            <label for="target_channels">ID каналов для публикации (JSON массив)</label>
                             <input type="text" id="target_channels" class="form-control"
                                 value="{{ setting.target_channels if setting and setting.target_channels else '[]' }}">
                         </div>
@@ -569,10 +593,8 @@
                     </div>
 
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <button type="button" class="btn" id="save-btn" onclick="saveSettingsGlobal()">💾 Сохранить
-                            настройки конфигурации</button>
-                        <button type="button" class="btn btn-gray" onclick="saveAsPreset()">+ Сохранить как
-                            Пресет</button>
+                        <button type="button" class="btn" id="save-btn" onclick="saveSettingsGlobal()">💾 Сохранить настройки</button>
+                        <button type="button" class="btn btn-gray" onclick="saveAsPreset()">+ Сохранить как пресет</button>
                     </div>
                 </form>
             </div>
@@ -664,7 +686,61 @@
                 </div>
             </div>
 
-            <!-- TAB 5: ANALYTICS -->
+            <!-- TAB 5: WORKERS -->
+            <div id="Workers" class="tab-content">
+                <h2 style="margin-bottom:1rem;">🖥️ Удалённые воркеры</h2>
+                <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.95rem;">
+                    Воркер — отдельный ПК с запущенным <code>worker_service</code>. Каждый воркер имеет свой Telegram-токен и публикует в назначенные ему каналы.
+                    Оркестратор автоматически отправляет задачи на воркер (push), если у него есть нужный канал.
+                </p>
+
+                <!-- Add worker form -->
+                <div class="glass-panel" style="padding:1.5rem; margin-bottom:1.5rem; border-left:4px solid var(--primary);">
+                    <h3 style="margin-bottom:1rem;">➕ Добавить воркер</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Название</label>
+                            <input type="text" id="w_name" class="form-control" placeholder="Home Server 1">
+                        </div>
+                        <div class="form-group">
+                            <label>URL воркера</label>
+                            <input type="text" id="w_url" class="form-control" placeholder="http://192.168.1.10:8010">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Telegram Bot Token</label>
+                            <input type="password" id="w_token" class="form-control" placeholder="1234567890:AAF...">
+                        </div>
+                        <div class="form-group">
+                            <label>Каналы (JSON массив ID)</label>
+                            <input type="text" id="w_channels" class="form-control" placeholder='[-100123456789]' value="[]">
+                        </div>
+                    </div>
+                    <button class="btn btn-small btn-green" style="width:auto; padding: 0.75rem 2rem;" onclick="addWorker()">Добавить воркер</button>
+                </div>
+
+                <!-- Workers table -->
+                <div style="overflow-x:auto;">
+                    <table id="workers-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>URL</th>
+                                <th>Каналы</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workers-body">
+                            <tr><td colspan="6" style="text-align:center;">Загрузка...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 6: ANALYTICS -->
             <div id="Analytics" class="tab-content">
                 <div class="form-row">
                     <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
@@ -701,6 +777,15 @@
     <div id="toast">Действие выполнено!</div>
 
     <script>
+        const WEB_API_KEY = "{{ web_api_key }}";
+
+        async function apiFetch(url, options = {}) {
+            if (WEB_API_KEY) {
+                options.headers = Object.assign({}, options.headers, { 'X-API-Key': WEB_API_KEY });
+            }
+            return fetch(url, options);
+        }
+
         let pollingInterval = null;
         let analyticsChartInst = null;
 
@@ -725,7 +810,7 @@
 
         async function fetchSystemStats() {
             try {
-                const res = await fetch('/api/system/stats');
+                const res = await apiFetch('/api/system/stats');
                 if (res.ok) {
                     const data = await res.json();
                     document.getElementById('gpu-load').textContent = data.gpu + '%';
@@ -741,7 +826,7 @@
 
         async function fetchActiveModels() {
             try {
-                const res = await fetch('/api/system/ollama_active');
+                const res = await apiFetch('/api/system/ollama_active');
                 if (res.ok) {
                     const data = await res.json();
                     const ul = document.getElementById('active-llm-models');
@@ -759,7 +844,7 @@
 
         async function fetchPresets() {
             try {
-                const res = await fetch('/api/presets');
+                const res = await apiFetch('/api/presets');
                 if (res.ok) {
                     const data = await res.json();
                     const sel = document.getElementById('preset-select');
@@ -776,7 +861,7 @@
             if (!name) return;
             try {
                 await saveSettingsGlobal(); // save current settings first
-                const res = await fetch('/api/presets', {
+                const res = await apiFetch('/api/presets', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: name })
                 });
@@ -794,7 +879,7 @@
             if (!val) { showToast('Выберите пресет из списка', true); return; }
             if (!confirm("Загрузить пресет? Это перезапишет текущие настройки.")) return;
             try {
-                const res = await fetch(`/api/presets/load/${val}`, { method: 'POST' });
+                const res = await apiFetch(`/api/presets/load/${val}`, { method: 'POST' });
                 if (res.ok) {
                     showToast('Пресет применен! Обновляю страницу...');
                     setTimeout(() => location.reload(), 1000);
@@ -841,12 +926,13 @@
             document.getElementById(tabName).className += " active";
             evt.currentTarget.className += " active";
             if (tabName === 'NewsDB' || tabName === 'Moderation' || tabName === 'Archive') fetchNewsList();
+            if (tabName === 'Workers') fetchWorkers();
         }
 
         async function forceScrape() {
             try {
                 showToast('Запускаем парсер, подождите...', false);
-                const res = await fetch('/api/force_scrape', { method: 'POST' });
+                const res = await apiFetch('/api/force_scrape', { method: 'POST' });
                 if (res.ok) { showToast('Парсер успешно отработал!'); fetchNewsList(); }
                 else showToast('Ошибка запуска парсера', true);
             } catch (e) { showToast('Ошибка сети', true); }
@@ -855,52 +941,227 @@
         async function clearNewsDatabase() {
             if (!confirm("Вы уверены? Это УДАЛИТ ВСЕ НОВОСТИ из базы (включая архив и неопубликованные). Отменить нельзя!")) return;
             try {
-                const res = await fetch('/api/news/all', { method: 'DELETE' });
+                const res = await apiFetch('/api/news/all', { method: 'DELETE' });
                 if (res.ok) { showToast('База полностью очищена!'); fetchNewsList(); }
                 else showToast('Ошибка очистки', true);
             } catch (e) { showToast('Ошибка сети', true); }
         }
 
+        // ---------------------------------------------------------------
+        // Schedule builder
+        // ---------------------------------------------------------------
+        const DAYS = [
+            {key:'mon',label:'Пн'},{key:'tue',label:'Вт'},{key:'wed',label:'Ср'},
+            {key:'thu',label:'Чт'},{key:'fri',label:'Пт'},{key:'sat',label:'Сб'},{key:'sun',label:'Вс'}
+        ];
+        let scheduleData = {};
+
+        function renderScheduleGrid() {
+            const grid = document.getElementById('schedule-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            DAYS.forEach(day => {
+                const slots = (scheduleData[day.key] || []);
+                const chips = slots.map(t =>
+                    `<span style="background:rgba(59,130,246,0.2);color:#60a5fa;padding:0.2rem 0.55rem;border-radius:6px;display:inline-flex;align-items:center;gap:0.35rem;font-size:0.85rem;">
+                        ${t}&nbsp;<span onclick="removeSlot('${day.key}','${t}')" style="cursor:pointer;color:#f87171;font-weight:700;">×</span>
+                     </span>`
+                ).join('');
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;align-items:center;gap:0.75rem;';
+                row.innerHTML = `
+                    <span style="width:28px;color:var(--text-muted);font-weight:600;flex-shrink:0;">${day.label}</span>
+                    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;flex:1;">${chips || '<span style="color:var(--text-muted);font-size:0.85rem;">нет слотов</span>'}</div>
+                    <button type="button" class="btn btn-small btn-gray" style="width:auto;padding:0.2rem 0.6rem;font-size:0.8rem;flex-shrink:0;" onclick="addSlot('${day.key}')">+ Добавить</button>`;
+                grid.appendChild(row);
+            });
+        }
+
+        function addSlot(dayKey) {
+            const time = prompt('Введите время (UTC) в формате ЧЧ:ММ:', '09:00');
+            if (!time) return;
+            if (!/^\d{2}:\d{2}$/.test(time.trim())) { showToast('Неверный формат. Используйте ЧЧ:ММ', true); return; }
+            if (!scheduleData[dayKey]) scheduleData[dayKey] = [];
+            const t = time.trim();
+            if (!scheduleData[dayKey].includes(t)) { scheduleData[dayKey].push(t); scheduleData[dayKey].sort(); }
+            renderScheduleGrid();
+        }
+
+        function removeSlot(dayKey, time) {
+            if (!scheduleData[dayKey]) return;
+            scheduleData[dayKey] = scheduleData[dayKey].filter(t => t !== time);
+            if (!scheduleData[dayKey].length) delete scheduleData[dayKey];
+            renderScheduleGrid();
+        }
+
+        function setScheduleMode(mode) {
+            document.getElementById('schedule_mode').value = mode;
+            document.getElementById('interval_section').style.display = mode === 'interval' ? 'block' : 'none';
+            document.getElementById('weekly_section').style.display = mode === 'weekly' ? 'block' : 'none';
+            document.getElementById('btn_mode_interval').className = 'btn btn-small ' + (mode === 'interval' ? 'btn-green' : 'btn-gray');
+            document.getElementById('btn_mode_weekly').className = 'btn btn-small ' + (mode === 'weekly' ? 'btn-green' : 'btn-gray');
+            if (mode === 'weekly') renderScheduleGrid();
+        }
+
+        // ---------------------------------------------------------------
+        // LLM provider switcher
+        // ---------------------------------------------------------------
+        const MODEL_HINTS = {
+            ollama: 'Список загружается из Ollama',
+            openai: 'gpt-4o · gpt-4o-mini · gpt-4-turbo',
+            openrouter: 'mistralai/mistral-7b-instruct · meta-llama/llama-3-70b-instruct · anthropic/claude-3-haiku',
+            anthropic: 'claude-opus-4-7 · claude-sonnet-4-6 · claude-haiku-4-5-20251001',
+            gemini: 'gemini-2.0-flash · gemini-1.5-pro · gemini-1.5-flash',
+        };
+
         function toggleApiField() {
             const llm = document.getElementById('llm_source').value;
-            document.getElementById('apikey_group').style.display = llm === 'api' ? 'block' : 'none';
+            const isOllama = llm === 'ollama';
+            document.getElementById('apikey_group').style.display = isOllama ? 'none' : 'block';
+            document.getElementById('apibase_group').style.display = (llm === 'openai' || llm === 'openrouter') ? 'block' : 'none';
+
+            // Switch model input type
+            const sel = document.getElementById('model_select');
+            const inp = document.getElementById('model_text');
+            if (isOllama) { sel.style.display = 'block'; inp.style.display = 'none'; }
+            else { sel.style.display = 'none'; inp.style.display = 'block'; }
+
+            // Update base URL placeholder
+            const baseEl = document.getElementById('api_base_url');
+            if (baseEl) baseEl.placeholder = llm === 'openrouter' ? 'https://openrouter.ai/api/v1' : 'https://api.openai.com/v1';
+
+            document.getElementById('model_hint').textContent = MODEL_HINTS[llm] || '';
         }
 
         async function fetchModels() {
             try {
-                const res = await fetch('/api/models');
+                const res = await apiFetch('/api/models');
                 const data = await res.json();
                 if (data.models && data.models.length > 0) {
-                    const select = document.getElementById('model');
-                    const currentValue = select.getAttribute('data-current');
-                    select.innerHTML = '';
+                    const sel = document.getElementById('model_select');
+                    const currentValue = sel.getAttribute('data-current');
+                    sel.innerHTML = '';
                     data.models.forEach(m => {
                         const opt = document.createElement('option');
                         opt.value = m; opt.textContent = m;
                         if (m === currentValue) opt.selected = true;
-                        select.appendChild(opt);
+                        sel.appendChild(opt);
                     });
                 }
             } catch (e) { console.error("Failed to fetch models", e); }
         }
+
+        // ---------------------------------------------------------------
+        // Workers
+        // ---------------------------------------------------------------
+        async function fetchWorkers() {
+            try {
+                const res = await apiFetch('/api/workers');
+                const data = await res.json();
+                const tbody = document.getElementById('workers-body');
+                if (!data.workers || !data.workers.length) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Воркеры не добавлены</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = '';
+                data.workers.forEach(w => {
+                    let channels = '—';
+                    try { const arr = JSON.parse(w.channels || '[]'); channels = arr.length ? arr.join(', ') : '—'; } catch(e) {}
+                    const statusBadge = w.is_active
+                        ? '<span class="badge badge-ready_to_post">Активен</span>'
+                        : '<span class="badge badge-rejected">Отключён</span>';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${w.id}</td>
+                            <td><strong>${w.name}</strong></td>
+                            <td><code style="color:#60a5fa;">${w.url}</code></td>
+                            <td style="font-size:0.8rem;color:var(--text-muted);">${channels}</td>
+                            <td id="w-status-${w.id}">${statusBadge}</td>
+                            <td>
+                                <button class="btn btn-small btn-gray" onclick="pingWorker(${w.id})" style="margin-right:0.25rem;">📡 Пинг</button>
+                                <button class="btn btn-small btn-red" onclick="deleteWorker(${w.id})">Удалить</button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (e) { console.error('fetchWorkers error', e); }
+        }
+
+        async function addWorker() {
+            const name = document.getElementById('w_name').value.trim();
+            const url = document.getElementById('w_url').value.trim();
+            const token = document.getElementById('w_token').value.trim();
+            const channels = document.getElementById('w_channels').value.trim() || '[]';
+            if (!name || !url || !token) { showToast('Заполните название, URL и токен', true); return; }
+            try {
+                const res = await apiFetch('/api/workers', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name, url, token, channels})
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    showToast('Воркер добавлен!');
+                    document.getElementById('w_name').value = '';
+                    document.getElementById('w_url').value = '';
+                    document.getElementById('w_token').value = '';
+                    document.getElementById('w_channels').value = '[]';
+                    fetchWorkers();
+                } else { showToast('Ошибка: ' + (data.message || ''), true); }
+            } catch (e) { showToast('Ошибка сети', true); }
+        }
+
+        async function deleteWorker(id) {
+            if (!confirm('Удалить воркер?')) return;
+            try {
+                const res = await apiFetch(`/api/workers/${id}`, {method: 'DELETE'});
+                const data = await res.json();
+                if (data.status === 'ok') { showToast('Воркер удалён'); fetchWorkers(); }
+                else showToast('Ошибка удаления', true);
+            } catch (e) { showToast('Ошибка сети', true); }
+        }
+
+        async function pingWorker(id) {
+            const cell = document.getElementById(`w-status-${id}`);
+            if (cell) cell.innerHTML = '<span class="badge badge-pending">Проверка...</span>';
+            try {
+                const res = await apiFetch(`/api/workers/${id}/ping`, {method: 'POST'});
+                const data = await res.json();
+                if (cell) cell.innerHTML = data.online
+                    ? '<span class="badge badge-ready_to_post">✅ Онлайн</span>'
+                    : '<span class="badge badge-rejected">❌ Офлайн</span>';
+            } catch (e) {
+                if (cell) cell.innerHTML = '<span class="badge badge-rejected">❌ Ошибка</span>';
+            }
+        }
         async function fetchSettings() {
             try {
-                const res = await fetch('/api/settings');
+                const res = await apiFetch('/api/settings');
                 const data = await res.json();
                 document.getElementById('prompt').value = data.prompt || '';
-                document.getElementById('model').setAttribute('data-current', data.model || '');
+                document.getElementById('model_select').setAttribute('data-current', data.model || '');
+                document.getElementById('model_text').value = data.model || '';
                 document.getElementById('schedule_interval').value = data.schedule_interval || 60;
                 document.getElementById('is_active').checked = data.is_active;
                 updateStatusDot(data.is_active);
                 document.getElementById('auto_post').checked = data.auto_post;
                 document.getElementById('auto_approve_news').checked = data.auto_approve_news;
                 document.getElementById('llm_source').value = data.llm_source || 'ollama';
-                document.getElementById('api_key').value = data.api_key || '';
-                document.getElementById('language').value = data.language || 'ru';
-                document.getElementById('post_style').value = data.post_style || 'formal';
+                // Don't overwrite api_key with masked value; leave blank so user types only when changing
+                if (data.api_key && !data.api_key.startsWith('***')) {
+                    document.getElementById('api_key').value = data.api_key;
+                }
+                document.getElementById('api_base_url').value = data.api_base_url || '';
+                document.getElementById('language').value = data.language || 'RU';
+                document.getElementById('post_style').value = data.post_style || 'informative';
                 document.getElementById('image_source').value = data.image_source || 'none';
                 document.getElementById('extra_admins').value = data.extra_admins || '';
                 document.getElementById('target_channels').value = data.target_channels || '[]';
+
+                // Schedule
+                const mode = data.schedule_mode || 'interval';
+                try { scheduleData = JSON.parse(data.post_schedule || '{}'); } catch(e) { scheduleData = {}; }
+                setScheduleMode(mode);
+
                 toggleApiField();
                 updateConnectedChannels();
             } catch (e) { console.error("Failed to fetch settings", e); }
@@ -922,25 +1183,34 @@
             const originalText = btn.textContent;
             btn.textContent = 'Сохранение...'; btn.disabled = true;
 
+            const llmSrc = document.getElementById('llm_source').value;
+            const isOllama = llmSrc === 'ollama';
+            const modelVal = isOllama
+                ? document.getElementById('model_select').value
+                : document.getElementById('model_text').value;
+
             const payload = {
                 channel_id: null,
                 prompt: document.getElementById('prompt').value,
-                model: document.getElementById('model').value,
-                schedule_interval: parseInt(document.getElementById('schedule_interval').value),
+                model: modelVal,
+                schedule_interval: parseInt(document.getElementById('schedule_interval').value) || 60,
                 is_active: document.getElementById('is_active').checked,
                 auto_post: document.getElementById('auto_post').checked,
                 auto_approve_news: document.getElementById('auto_approve_news').checked,
-                llm_source: document.getElementById('llm_source').value,
-                api_key: document.getElementById('api_key').value,
+                llm_source: llmSrc,
+                api_key: document.getElementById('api_key').value || null,
+                api_base_url: document.getElementById('api_base_url').value || null,
                 language: document.getElementById('language').value,
                 post_style: document.getElementById('post_style').value,
                 image_source: document.getElementById('image_source').value,
                 extra_admins: document.getElementById('extra_admins').value,
-                target_channels: document.getElementById('target_channels').value
+                target_channels: document.getElementById('target_channels').value,
+                schedule_mode: document.getElementById('schedule_mode').value,
+                post_schedule: JSON.stringify(scheduleData),
             };
 
             try {
-                const res = await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const res = await apiFetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (res.ok) showToast('Настройки успешно сохранены!');
                 else showToast('Ошибка при сохранении!', true);
             } catch (err) { showToast('Ошибка соединения!', true); }
@@ -952,7 +1222,7 @@
 
         async function fetchNewsList() {
             try {
-                const res = await fetch('/api/news');
+                const res = await apiFetch('/api/news');
                 const data = await res.json();
                 globalNewsData = data.articles;
                 renderNewsTable();
@@ -1089,7 +1359,7 @@
             if (textDataStr !== null) payload.generated_text = textDataStr;
 
             try {
-                const res = await fetch(`/api/news/${id}`, {
+                const res = await apiFetch(`/api/news/${id}`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
@@ -1104,7 +1374,7 @@
         async function deleteNews(id) {
             if (!confirm("Удалить новость навсегда?")) return;
             try {
-                const res = await fetch(`/api/news/${id}`, { method: 'DELETE' });
+                const res = await apiFetch(`/api/news/${id}`, { method: 'DELETE' });
                 if (res.ok) fetchNewsList();
             } catch (e) { showToast('Ошибка удаления', true); }
         }

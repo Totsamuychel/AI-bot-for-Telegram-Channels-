@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 async def run_scrape_workflow():
     news = await fetch_rss_news(limit=15)
-    admin_bot_url = os.getenv("ADMIN_BOT_URL", "http://127.0.0.1:8000")
+    admin_bot_url = os.getenv("ADMIN_BOT_URL", "http://admin_bot:8000")
             
     async with httpx.AsyncClient() as client:
         for item in news:

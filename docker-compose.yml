@@ -7,6 +7,7 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    restart: unless-stopped
 
   ollama_service:
     build: ./ollama_service
@@ -16,28 +17,38 @@ services:
       - OLLAMA_HOST=http://ollama:11434
     depends_on:
       - ollama
+    restart: unless-stopped
 
   image_service:
     build: ./image_service
     ports:
       - "8001:8001"
+    restart: unless-stopped
 
   news_aggregator:
     build: ./news_aggregator
     ports:
       - "8002:8002"
+    environment:
+      - ADMIN_BOT_URL=http://admin_bot:8000
+    restart: unless-stopped
 
   db:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=n8n_user
-      - POSTGRES_PASSWORD=n8n_password
-      - POSTGRES_DB=n8n_db
+      - POSTGRES_USER=${POSTGRES_USER:-n8n_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-n8n_db}
     ports:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-n8n_user} -d ${POSTGRES_DB:-n8n_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   admin_bot:
     build: ./admin_bot
@@ -46,10 +57,28 @@ services:
     environment:
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
       - ADMIN_IDS=${ADMIN_IDS}
-      - DATABASE_URL=postgresql+asyncpg://n8n_user:n8n_password@db/n8n_db
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-n8n_user}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB:-n8n_db}
+      - NEWS_AGGREGATOR_URL=http://news_aggregator:8002
+      - WEB_API_KEY=${WEB_API_KEY:-}
     depends_on:
-      - db
-    # restart: always
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # -----------------------------------------------------------------------
+  # Optional: local worker (uncomment to run a worker on this same machine)
+  # For remote PCs, run worker_service standalone with its own .env file.
+  # -----------------------------------------------------------------------
+  # worker_local:
+  #   build: ./worker_service
+  #   ports:
+  #     - "8010:8010"
+  #   environment:
+  #     - WORKER_NAME=local-worker-1
+  #     - WORKER_PORT=8010
+  #     - WORKER_AUTH_TOKEN=${WORKER_AUTH_TOKEN:-}
+  #     - ORCHESTRATOR_URL=http://admin_bot:8000
+  #   restart: unless-stopped
 
 volumes:
   ollama_data:

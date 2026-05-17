@@ -1,39 +1,42 @@
 import subprocess
 import sys
 import time
+import os
 
 def main():
-    print("🚀 Запуск AutoPoster CMS...")
-    
-    # Запуск сервера админ панели и бота
-    bot_process = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "admin_bot.main:app", "--host", "127.0.0.1", "--port", "8000"]
-    )
-    
-    print("⏳ Ожидание запуска административной панели...")
-    time.sleep(3) # Даем боту время поднять базу данных
-    
-    # Запуск агрегатора новостей
-    aggregator_process = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "news_aggregator.main:app", "--host", "127.0.0.1", "--port", "8001"]
-    )
+    print("🚀 Запуск микросервисов n8n (Local Mode)...")
+
+    # Конфигурация портов
+    services = [
+        {"name": "Ollama Service", "module": "ollama_service.main:app", "port": 8000},
+        {"name": "Image Service", "module": "image_service.main:app", "port": 8001},
+        {"name": "News Aggregator", "module": "news_aggregator.main:app", "port": 8002},
+        {"name": "Admin Bot & Web", "module": "admin_bot.main:app", "port": 8003},
+    ]
+
+    processes = []
 
     try:
-        print("\n✅ Все сервисы успешно запущены!")
-        print("👉 Панель управления доступна по адресу: http://127.0.0.1:8000")
-        print("🛑 Для остановки нажмите Ctrl + C")
-        
-        # Ждем завершения процессов (бесконечно)
-        bot_process.wait()
-        aggregator_process.wait()
-        
+        for svc in services:
+            print(f"📦 Запуск {svc['name']} на порту {svc['port']}...")
+            proc = subprocess.Popen(
+                [sys.executable, "-m", "uvicorn", svc['module'], "--host", "127.0.0.1", "--port", str(svc['port'])]
+            )
+            processes.append(proc)
+            time.sleep(1) # Небольшая пауза для инициализации
+
+        print("\n✅ Все сервисы запущены!")
+        print("🔗 Admin Panel: http://127.0.0.1:8003")
+        print("🛑 Нажмите Ctrl+C для остановки всех сервисов")
+
+        while True:
+            time.sleep(1)
+            
     except KeyboardInterrupt:
-        print("\n🛑 Получен сигнал остановки (Ctrl+C). Завершение работы...")
-        bot_process.terminate()
-        aggregator_process.terminate()
-        bot_process.wait()
-        aggregator_process.wait()
-        print("Работа всех сервисов завершена.")
+        print("\n🛑 Остановка сервисов...")
+        for proc in processes:
+            proc.terminate()
+        print("👋 Все процессы завершены.")
 
 if __name__ == "__main__":
     main()

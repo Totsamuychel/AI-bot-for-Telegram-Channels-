@@ -1,10 +1,13 @@
+import logging
 import httpx
 from .config import settings
 from .prompts import SYSTEM_PROMPT
 
+logger = logging.getLogger(__name__)
+
 async def generate_with_ollama(prompt: str) -> str:
     url = f"{settings.OLLAMA_HOST}/api/chat"
-    
+
     payload = {
         "model": settings.OLLAMA_MODEL,
         "messages": [
@@ -12,7 +15,7 @@ async def generate_with_ollama(prompt: str) -> str:
             {"role": "user", "content": prompt}
         ],
         "stream": False,
-        "format": "json" # Force valid JSON response
+        "format": "json"
     }
 
     async with httpx.AsyncClient() as client:
@@ -22,8 +25,8 @@ async def generate_with_ollama(prompt: str) -> str:
             data = response.json()
             return data.get("message", {}).get("content", "")
         except httpx.RequestError as exc:
-            print(f"An error occurred while requesting {exc.request.url!r}.")
+            logger.error(f"Request error while calling Ollama at {exc.request.url!r}: {exc}")
             raise
         except httpx.HTTPStatusError as exc:
-            print(f"Error response {exc.response.status_code} while requesting {exc.request.url!r}.")
+            logger.error(f"HTTP {exc.response.status_code} from Ollama at {exc.request.url!r}")
             raise
