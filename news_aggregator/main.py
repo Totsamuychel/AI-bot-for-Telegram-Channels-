@@ -3,10 +3,16 @@ import logging
 import httpx
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
 from typing import List
 from .models import NewsItemOut
 from .sources.rss_client import fetch_rss_news
+
+_API_KEY = os.getenv("WEB_API_KEY", "")
+
+async def _verify_key(x_api_key: str = Header(default="")):
+    if _API_KEY and x_api_key != _API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API key")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -73,7 +79,7 @@ async def get_news(limit: int = 5, topic: str = "ai"):
 def health_check():
     return {"status": "ok"}
 
-@app.post("/api/force_scrape")
+@app.post("/api/force_scrape", dependencies=[Depends(_verify_key)])
 async def force_scrape():
     try:
         await run_scrape_workflow()

@@ -1,6 +1,8 @@
 import asyncio
+import ipaddress
 import logging
 from contextlib import asynccontextmanager
+from urllib.parse import urlparse
 from fastapi import FastAPI, Request, Header, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
@@ -40,6 +42,10 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down application lifecycle...")
     for task in bg_tasks:
         task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
 
 app = FastAPI(lifespan=lifespan)
 
@@ -54,6 +60,29 @@ app.add_middleware(
 async def verify_api_key(x_api_key: str = Header(default="")):
     if WEB_API_KEY and x_api_key != WEB_API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API key")
+
+def _validate_worker_url(url: str) -> str:
+    """Reject loopback/reserved hosts to prevent SSRF."""
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        raise ValueError("Invalid URL format")
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError("Worker URL must use http or https")
+    host = (parsed.hostname or "").lower()
+    if not host:
+        raise ValueError("Worker URL has no hostname")
+    blocked = {"localhost", "127.0.0.1", "0.0.0.0", "::1", "169.254.169.254"}
+    if host in blocked:
+        raise ValueError(f"Worker URL cannot point to loopback or reserved host: {host}")
+    try:
+        addr = ipaddress.ip_address(host)
+        if addr.is_loopback or addr.is_link_local:
+            raise ValueError(f"Worker URL cannot point to loopback or link-local IP: {host}")
+    except ValueError as e:
+        if "Worker URL" in str(e):
+            raise
+    return url.rstrip("/")
 
 @app.get("/")
 async def root(request: Request):
@@ -140,8 +169,8 @@ async def update_settings(data: SettingsUpdate):
             setting.schedule_interval = data.schedule_interval
             setting.is_active = data.is_active
             setting.llm_source = data.llm_source
-            if data.api_key and not data.api_key.startswith("***"):
-                setting.api_key = data.api_key
+            if data.api_key is not None and not data.api_key.startswith("***"):
+                setting.api_key = data.api_key or None  # empty string = clear key
             setting.api_base_url = data.api_base_url
             setting.language = data.language
             setting.post_style = data.post_style
@@ -157,6 +186,18 @@ async def update_settings(data: SettingsUpdate):
     except Exception as e:
         logger.error(f"Error saving settings: {e}")
         return {"status": "error", "message": str(e)}
+
+class ApiKeyUpdate(BaseModel):
+    api_key: str | None = None
+
+@app.put("/api/settings/api-key", dependencies=[Depends(verify_api_key)])
+async def update_api_key(data: ApiKeyUpdate):
+    """Explicitly set or clear the LLM API key."""
+    async with async_session() as session:
+        setting = await get_bot_setting(session)
+        setting.api_key = data.api_key or None
+        await session.commit()
+    return {"status": "ok"}
 
 @app.get("/api/models")
 async def get_models():
@@ -185,11 +226,11 @@ class NewsStatusUpdate(BaseModel):
     generated_text: str | None = None
 
 @app.get("/api/news")
-async def get_news():
+async def get_news(limit: int = 50, offset: int = 0):
     try:
         async with async_session() as session:
             result = await session.execute(
-                select(NewsArticle).order_by(NewsArticle.created_at.desc()).limit(100)
+                select(NewsArticle).order_by(NewsArticle.created_at.desc()).limit(min(limit, 200)).offset(offset)
             )
             articles = result.scalars().all()
             return {"articles": [
@@ -278,8 +319,9 @@ async def delete_all_news():
 @app.post("/api/force_scrape", dependencies=[Depends(verify_api_key)])
 async def force_scrape():
     try:
+        headers = {"X-API-Key": WEB_API_KEY} if WEB_API_KEY else {}
         async with httpx.AsyncClient() as client:
-            res = await client.post(f"{NEWS_AGGREGATOR_URL}/api/force_scrape", timeout=20.0)
+            res = await client.post(f"{NEWS_AGGREGATOR_URL}/api/force_scrape", headers=headers, timeout=20.0)
             return res.json()
     except Exception as e:
         logger.error(f"Error triggering force scrape: {e}")
@@ -470,9 +512,10 @@ async def get_workers():
 async def create_worker(data: WorkerCreate):
     async with async_session() as session:
         try:
+            validated_url = _validate_worker_url(data.url)
             worker = Worker(
                 name=data.name,
-                url=data.url.rstrip("/"),
+                url=validated_url,
                 token=data.token,
                 channels=data.channels,
             )
@@ -495,7 +538,7 @@ async def update_worker(worker_id: int, data: WorkerUpdate):
         if data.is_active is not None:
             worker.is_active = data.is_active
         if data.url is not None:
-            worker.url = data.url.rstrip("/")
+            worker.url = _validate_worker_url(data.url)
         await session.commit()
         return {"status": "ok"}
 

@@ -221,16 +221,24 @@ async def process_generation(session, setting) -> None:
     if text:
         article.generated_text = _clean_markdown(text)
         article.status = "ready_to_post" if getattr(setting, "auto_post", False) else "pending_review"
+        article.retry_count = 0
         logger.info(f"[Generation] Status → {article.status}")
         await session.commit()
     else:
-        logger.warning(f"[Generation] No text produced for: {article.title}")
+        article.retry_count = (article.retry_count or 0) + 1
+        if article.retry_count >= 5:
+            article.status = "failed"
+            logger.error(f"[Generation] Giving up after {article.retry_count} attempts: {article.title}")
+        else:
+            logger.warning(f"[Generation] No text produced (attempt {article.retry_count}/5): {article.title}")
+        await session.commit()
 
 
-async def process_publishing(session, setting, channels_to_post: list, now: datetime) -> None:
+async def process_publishing(session, setting, channels_to_post: list) -> None:
     global last_post_time
 
     async with _post_lock:
+        now = datetime.utcnow()  # capture after acquiring lock — avoids stale time from generation delay
         # Decide whether it is time to post
         mode = getattr(setting, "schedule_mode", "interval") or "interval"
         if mode == "weekly":
@@ -300,9 +308,8 @@ async def autoposter_loop() -> None:
                             channels_to_post = [int(raw_cid)]
 
                     if channels_to_post:
-                        now = datetime.utcnow()
                         await process_generation(session, setting)
-                        await process_publishing(session, setting, channels_to_post, now)
+                        await process_publishing(session, setting, channels_to_post)
         except Exception as e:
             logger.error(f"Autoposter loop error: {e}")
 

@@ -45,10 +45,11 @@ class NewsArticle(Base):
     url: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     source: Mapped[str] = mapped_column(String, nullable=True)
-    status: Mapped[str] = mapped_column(String, default="pending")
-    # pending -> approved -> pending_review -> ready_to_post -> posted | rejected
+    status: Mapped[str] = mapped_column(String, default="pending", index=True)
+    # pending -> approved -> pending_review -> ready_to_post -> posted | rejected | failed
     generated_text: Mapped[str] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
 
 
 class SettingsPreset(Base):

@@ -365,6 +365,28 @@
         .news-search:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,245,255,0.08), 0 0 18px rgba(0,245,255,0.1); }
         .news-search::placeholder { color: var(--text-3); }
 
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .container { padding: 0.75rem; }
+            .header { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+            h1 { font-size: 1.6rem; }
+            .tabs { gap: 0.2rem; }
+            .tab-btn { padding: 0.45rem 0.6rem; font-size: 0.52rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .form-row { flex-direction: column; gap: 0.75rem; }
+            table { font-size: 0.75rem; }
+            table th, table td { padding: 0.5rem 0.4rem; }
+            .btn { font-size: 0.62rem; padding: 0.5rem 0.75rem; }
+            .glass-panel { padding: 1rem; }
+            .mod-layout { flex-direction: column; }
+            .mod-list { max-height: 200px; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .tab-btn { padding: 0.35rem 0.45rem; font-size: 0.48rem; }
+            h1 { font-size: 1.2rem; }
+        }
+
         /* ── TOPOLOGY ── */
         .topo-node {
             position: absolute; background: var(--surface-2);
@@ -466,7 +488,10 @@
                         </ul>
                     </div>
                     <div class="glass-panel" style="padding: 1.5rem;">
-                        <h3 style="margin-bottom: 1rem;">🧠 Активные ИИ Модели (Ollama)</h3>
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+                            <h3>🧠 Активные ИИ Модели (Ollama)</h3>
+                            <span id="ollama-badge" style="font-family:var(--mono); font-size:0.65rem; padding:0.2rem 0.55rem; border-radius:2px; border:1px solid var(--text-3); color:var(--text-2);">● Проверка</span>
+                        </div>
                         <ul id="active-llm-models"
                             style="list-style-type: none; padding: 0; color: #fbbf24; font-weight: 600; line-height: 1.8;">
                             <li>Загрузка...</li>
@@ -642,7 +667,7 @@
                         <button class="btn btn-small" id="btn-refresh-news" onclick="fetchNewsList()">🔄 Обновить</button>
                     </div>
                 </div>
-                <input class="news-search" id="news-search" placeholder="🔍 Поиск по заголовку или источнику..." oninput="applyNewsFilter(this.value)">
+                <input class="news-search" id="news-search" placeholder="🔍 Поиск по заголовку или источнику..." oninput="debouncedSearch(this.value)">
                 <div class="filter-pills">
                     <button class="filter-pill active" id="pill-all" onclick="setNewsFilter('all', this)">Все</button>
                     <button class="filter-pill" id="pill-pending" onclick="setNewsFilter('pending', this)">Сырые</button>
@@ -651,6 +676,7 @@
                     <button class="filter-pill" id="pill-ready_to_post" onclick="setNewsFilter('ready_to_post', this)">Готово</button>
                     <button class="filter-pill" id="pill-posted" onclick="setNewsFilter('posted', this)">Опубликовано</button>
                     <button class="filter-pill" id="pill-rejected" onclick="setNewsFilter('rejected', this)">Отклонено</button>
+                    <button class="filter-pill" id="pill-failed" onclick="setNewsFilter('failed', this)">Ошибка</button>
                 </div>
                 <div style="overflow-x: auto;">
                     <table id="news-table">
@@ -668,6 +694,9 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+                <div style="text-align:center; margin-top:1rem;">
+                    <button id="btn-load-more" class="btn btn-small btn-gray" style="display:none;" onclick="loadMoreNews()">Загрузить ещё</button>
                 </div>
             </div>
 
@@ -730,7 +759,7 @@
                 </p>
 
                 <!-- Add worker form -->
-                <div class="glass-panel" style="padding:1.5rem; margin-bottom:1.5rem; border-left:4px solid var(--primary);">
+                <div class="glass-panel" style="padding:1.5rem; margin-bottom:1.5rem; border-left:4px solid var(--accent);">
                     <h3 style="margin-bottom:1rem;">➕ Добавить воркер</h3>
                     <div class="form-row">
                         <div class="form-group">
@@ -816,7 +845,7 @@
                 <p style="color:var(--text-2); margin-bottom:1.5rem; font-size:0.9rem;">
                     Визуальная схема потока данных: источник AI → оркестратор → воркеры → каналы. Воркеры пингуются автоматически каждые 30 сек.
                 </p>
-                <div id="topology-container" style="position:relative; min-height:560px; background:rgba(15,23,42,0.5); border-radius:16px; border:1px solid var(--border-color); overflow:hidden; padding:1.5rem;">
+                <div id="topology-container" style="position:relative; min-height:560px; background:rgba(15,23,42,0.5); border-radius:16px; border:1px solid var(--border-2); overflow:hidden; padding:1.5rem;">
                     <svg id="topology-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;"></svg>
                     <div id="topology-nodes" style="position:relative;z-index:1;width:100%;height:100%;"></div>
                     <div id="topology-loading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--text-2);">
@@ -897,6 +926,7 @@
         }
 
         async function fetchActiveModels() {
+            const badge = document.getElementById('ollama-badge');
             try {
                 const res = await apiFetch('/api/system/ollama_active');
                 if (res.ok) {
@@ -905,13 +935,17 @@
                     ul.innerHTML = '';
                     if (!data.models || data.models.length === 0) {
                         ul.innerHTML = '<li style="color: var(--text-2); font-weight: normal;">Нет активных моделей</li>';
+                        if (badge) { badge.textContent = '● Online'; badge.style.color = 'var(--green)'; badge.style.borderColor = 'rgba(0,255,136,0.3)'; }
                     } else {
-                        data.models.forEach(m => {
-                            ul.innerHTML += `<li>⚡ ${m}</li>`;
-                        });
+                        data.models.forEach(m => { ul.innerHTML += `<li>⚡ ${escHtml(m)}</li>`; });
+                        if (badge) { badge.textContent = '● Online'; badge.style.color = 'var(--green)'; badge.style.borderColor = 'rgba(0,255,136,0.3)'; }
                     }
+                } else {
+                    if (badge) { badge.textContent = '● Offline'; badge.style.color = 'var(--red)'; badge.style.borderColor = 'rgba(255,34,85,0.3)'; }
                 }
-            } catch (e) { }
+            } catch (e) {
+                if (badge) { badge.textContent = '● Offline'; badge.style.color = 'var(--red)'; badge.style.borderColor = 'rgba(255,34,85,0.3)'; }
+            }
         }
 
         async function fetchPresets() {
@@ -984,6 +1018,7 @@
             updateConnectedChannels();
             if (pollingInterval) clearInterval(pollingInterval);
             pollingInterval = setInterval(() => {
+                if (document.visibilityState !== 'visible') return;
                 fetchSystemStats();
                 fetchActiveModels();
             }, 3000);
@@ -1335,24 +1370,48 @@
             finally { btn.textContent = originalText; btn.disabled = false; }
         }
 
+        function escHtml(s) {
+            return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
         let globalNewsData = [];
         let currentlyEditingModId = null;
+        let _newsPageOffset = 0;
+        const _NEWS_PAGE_SIZE = 50;
 
-        async function fetchNewsList() {
+        async function fetchNewsList(append = false) {
             const btn = document.getElementById('btn-refresh-news');
-            if (btn) setLoading(btn, true);
+            if (!append && btn) setLoading(btn, true);
+            if (!append) _newsPageOffset = 0;
             try {
-                const res = await apiFetch('/api/news');
+                const res = await apiFetch(`/api/news?limit=${_NEWS_PAGE_SIZE}&offset=${_newsPageOffset}`);
                 const data = await res.json();
-                globalNewsData = data.articles;
+                if (append) {
+                    globalNewsData = globalNewsData.concat(data.articles);
+                } else {
+                    globalNewsData = data.articles;
+                }
+                _newsPageOffset += data.articles.length;
+                const loadMoreBtn = document.getElementById('btn-load-more');
+                if (loadMoreBtn) loadMoreBtn.style.display = data.articles.length < _NEWS_PAGE_SIZE ? 'none' : 'block';
                 renderNewsTable();
                 renderModerationTab();
             } catch (e) {
                 console.error(e);
                 showToast('Ошибка загрузки данных', true);
             } finally {
-                if (btn) setLoading(btn, false);
+                if (!append && btn) setLoading(btn, false);
             }
+        }
+
+        function loadMoreNews() {
+            fetchNewsList(true);
+        }
+
+        let _searchTimer = null;
+        function debouncedSearch(val) {
+            clearTimeout(_searchTimer);
+            _searchTimer = setTimeout(() => applyNewsFilter(val), 300);
         }
 
         let activeNewsFilter = 'all';
@@ -1385,10 +1444,10 @@
             let articlesForTable, articlesForArchive;
             if (filterStatus !== 'all') {
                 articlesForTable = globalNewsData.filter(a => a.status === filterStatus && matchesSearch(a));
-                articlesForArchive = globalNewsData.filter(a => ['posted', 'rejected'].includes(a.status) && matchesSearch(a));
+                articlesForArchive = globalNewsData.filter(a => ['posted', 'rejected', 'failed'].includes(a.status) && matchesSearch(a));
             } else {
-                articlesForTable = globalNewsData.filter(a => !['pending_review', 'posted', 'rejected'].includes(a.status) && matchesSearch(a));
-                articlesForArchive = globalNewsData.filter(a => ['posted', 'rejected'].includes(a.status) && matchesSearch(a));
+                articlesForTable = globalNewsData.filter(a => !['pending_review', 'posted', 'rejected', 'failed'].includes(a.status) && matchesSearch(a));
+                articlesForArchive = globalNewsData.filter(a => ['posted', 'rejected', 'failed'].includes(a.status) && matchesSearch(a));
             }
 
             if (articlesForTable.length === 0) {
@@ -1398,6 +1457,7 @@
                     let badgeClass = 'badge-pending'; let badgeText = 'Сырая';
                     if (a.status === 'approved') { badgeClass = 'badge-approved'; badgeText = 'Ждет генерации ИИ'; }
                     if (a.status === 'ready_to_post') { badgeClass = 'badge-ready_to_post'; badgeText = 'Одобрено. В очереди'; }
+                    if (a.status === 'failed') { badgeClass = 'badge-rejected'; badgeText = 'Ошибка генерации'; }
 
                     const tr = document.createElement('tr');
 
@@ -1407,9 +1467,10 @@
                     }
                     actionsHtml += `<button class="btn btn-small btn-red" onclick="deleteNews(${a.id})">Удалить</button>`;
 
+                    const titleShort = escHtml(a.title.substring(0, 80)) + (a.title.length > 80 ? '...' : '');
                     tr.innerHTML = `
                         <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-                        <td><a href="${a.url}" target="_blank" style="color:#60a5fa; text-decoration:none;"><strong>${a.title.substring(0, 80)}${a.title.length > 80 ? '...' : ''}</strong></a><br><small style="color:var(--text-2);">${a.source || 'Источник'}</small></td>
+                        <td><a href="${escHtml(a.url)}" target="_blank" style="color:#60a5fa; text-decoration:none;"><strong>${titleShort}</strong></a><br><small style="color:var(--text-2);">${escHtml(a.source || 'Источник')}</small></td>
                         <td>${new Date(a.created_at).toLocaleString()}</td>
                         <td>${actionsHtml}</td>
                     `;
@@ -1423,11 +1484,12 @@
                 } else {
                     articlesForArchive.forEach(a => {
                         let badgeClass = a.status === 'posted' ? 'badge-posted' : 'badge-rejected';
-                        let badgeText = a.status === 'posted' ? 'Опубликовано' : 'Удалено';
+                        let badgeText = a.status === 'posted' ? 'Опубликовано' : (a.status === 'failed' ? 'Ошибка' : 'Удалено');
                         const tr = document.createElement('tr');
+                        const archTitleShort = escHtml(a.title.substring(0, 80)) + (a.title.length > 80 ? '...' : '');
                         tr.innerHTML = `
                             <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-                            <td><a href="${a.url}" target="_blank" style="color:#60a5fa; text-decoration:none;"><strong>${a.title.substring(0, 80)}${a.title.length > 80 ? '...' : ''}</strong></a></td>
+                            <td><a href="${escHtml(a.url)}" target="_blank" style="color:#60a5fa; text-decoration:none;"><strong>${archTitleShort}</strong></a></td>
                             <td>${new Date(a.created_at).toLocaleString()}</td>
                         `;
                         tbodyArch.appendChild(tr);
@@ -1457,10 +1519,10 @@
 
             let html = `
                 <div class="mod-active-post">
-                    <h3 style="margin-bottom: 0.5rem; color: #60a5fa;">${activePost.title}</h3>
-                    <p style="color: var(--text-2); font-size: 0.9rem; margin-bottom: 1rem;"><a href="${activePost.url}" target="_blank" style="color:var(--text-2);">Перейти к оригиналу новости ↗</a></p>
-                    <textarea id="mod-editor" class="form-control" style="min-height: 350px; font-size: 1.1rem; margin-bottom: 1.5rem;">${activePost.generated_text || ''}</textarea>
-                    
+                    <h3 style="margin-bottom: 0.5rem; color: #60a5fa;">${escHtml(activePost.title)}</h3>
+                    <p style="color: var(--text-2); font-size: 0.9rem; margin-bottom: 1rem;"><a href="${escHtml(activePost.url)}" target="_blank" style="color:var(--text-2);">Перейти к оригиналу новости ↗</a></p>
+                    <textarea id="mod-editor" class="form-control" style="min-height: 350px; font-size: 1.1rem; margin-bottom: 1.5rem;"></textarea>
+
                     <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                         <button class="btn btn-small btn-red" onclick="updateNewsData(${activePost.id}, 'rejected')">В мусор</button>
                         <button class="btn btn-small btn-green" style="font-size: 1.1rem; padding: 0.8rem 1.5rem;" onclick="saveActiveModeration(${activePost.id})">✅ Одобрить к публикации</button>
@@ -1474,8 +1536,8 @@
                     html += `
                         <div class="mod-item" onclick="selectModPost(${p.id})">
                             <div style="flex:1;">
-                                <strong style="display:block; margin-bottom: 0.3rem;">${p.title}</strong>
-                                <small style="color: var(--text-2);">${p.generated_text ? p.generated_text.substring(0, 80) : ''}...</small>
+                                <strong style="display:block; margin-bottom: 0.3rem;">${escHtml(p.title)}</strong>
+                                <small style="color: var(--text-2);">${escHtml(p.generated_text ? p.generated_text.substring(0, 80) : '')}...</small>
                             </div>
                             <span class="badge badge-pending_review">Ожидает</span>
                         </div>
@@ -1485,6 +1547,9 @@
             }
 
             container.innerHTML = html;
+            // Set textarea value after DOM insertion to avoid HTML injection
+            const modEditor = document.getElementById('mod-editor');
+            if (modEditor) modEditor.value = activePost.generated_text || '';
         }
 
         function selectModPost(id) {
@@ -1729,7 +1794,7 @@
         function topoShowTip(e) {
             const tip = document.getElementById('topo-tooltip');
             if (!tip) return;
-            tip.innerHTML = (e.currentTarget.dataset.tooltip || '').replace(/\n/g, '<br>');
+            tip.innerHTML = escHtml(e.currentTarget.dataset.tooltip || '').replace(/\n/g, '<br>');
             tip.style.display = 'block';
             tip.style.left = (e.clientX + 14) + 'px';
             tip.style.top = (e.clientY - 8) + 'px';
