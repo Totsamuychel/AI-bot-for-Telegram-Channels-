@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timedelta
 from sqlalchemy import select
 
-from admin_bot.config import OLLAMA_HOST, CHANNEL_ID
+from admin_bot.config import OLLAMA_HOST, CHANNEL_ID, WORKER_AUTH_TOKEN
 from admin_bot.database import async_session, get_bot_setting, NewsArticle, Worker
 from admin_bot.bot import bot
 
@@ -118,32 +118,6 @@ async def _generate_gemini(prompt: str, model: str, api_key: str) -> str:
         return res.json()["candidates"][0]["content"]["parts"][0]["text"]
 
 
-async def _call_llm(setting) -> str:
-    """Dispatch to the correct AI provider based on setting.llm_source."""
-    source = (setting.llm_source or "ollama").strip()
-    model = setting.model or "llama3.2"
-    api_key = setting.api_key or ""
-    base_url = setting.api_base_url or ""
-
-    if source == "ollama":
-        return await _generate_ollama("", model)  # prompt passed below; see caller
-
-    if source == "openai":
-        return await _generate_openai_compatible("", model, api_key, base_url or "https://api.openai.com/v1")
-
-    if source == "openrouter":
-        return await _generate_openai_compatible("", model, api_key, base_url or "https://openrouter.ai/api/v1")
-
-    if source == "anthropic":
-        return await _generate_anthropic("", model, api_key)
-
-    if source == "gemini":
-        return await _generate_gemini("", model, api_key)
-
-    logger.warning(f"[LLM] Unknown source '{source}', falling back to Ollama")
-    return await _generate_ollama("", model)
-
-
 async def generate_text(prompt: str, setting) -> str:
     """Generate text using the configured provider. Returns empty string on failure."""
     source = (setting.llm_source or "ollama").strip()
@@ -192,10 +166,14 @@ async def _get_worker_for_channel(session, channel_id: int) -> Worker | None:
 
 async def _dispatch_to_worker(worker: Worker, text: str, channel_id: int) -> bool:
     try:
+        headers = {}
+        if WORKER_AUTH_TOKEN:
+            headers["X-Worker-Auth"] = WORKER_AUTH_TOKEN
         async with httpx.AsyncClient() as client:
             res = await client.post(
                 f"{worker.url.rstrip('/')}/api/publish",
                 json={"token": worker.token, "channel_id": channel_id, "text": text},
+                headers=headers,
                 timeout=30.0,
             )
             if res.status_code == 200:

@@ -256,7 +256,7 @@ async def delete_news(news_id: int):
             result = await session.execute(select(NewsArticle).where(NewsArticle.id == news_id))
             article = result.scalar_one_or_none()
             if article:
-                await session.delete(article)
+                session.delete(article)
                 await session.commit()
                 return {"status": "ok"}
             return {"status": "error", "message": "Not found"}
@@ -506,7 +506,7 @@ async def delete_worker(worker_id: int):
         worker = result.scalar_one_or_none()
         if not worker:
             return {"status": "error", "message": "Not found"}
-        await session.delete(worker)
+        session.delete(worker)
         await session.commit()
         return {"status": "ok"}
 

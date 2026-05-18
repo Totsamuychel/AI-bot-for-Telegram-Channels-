@@ -59,7 +59,9 @@ services:
       - ADMIN_IDS=${ADMIN_IDS}
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-n8n_user}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB:-n8n_db}
       - NEWS_AGGREGATOR_URL=http://news_aggregator:8002
+      - OLLAMA_HOST=http://ollama:11434
       - WEB_API_KEY=${WEB_API_KEY:-}
+      - WORKER_AUTH_TOKEN=${WORKER_AUTH_TOKEN:-}
     depends_on:
       db:
         condition: service_healthy

@@ -12,3 +12,4 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
 NEWS_AGGREGATOR_URL = os.getenv("NEWS_AGGREGATOR_URL", "http://news_aggregator:8002")
 WEB_API_KEY = os.getenv("WEB_API_KEY", "")
 CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()]
+WORKER_AUTH_TOKEN = os.getenv("WORKER_AUTH_TOKEN", "")

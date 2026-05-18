@@ -48,7 +48,7 @@ class NewsArticle(Base):
     status: Mapped[str] = mapped_column(String, default="pending")
     # pending -> approved -> pending_review -> ready_to_post -> posted | rejected
     generated_text: Mapped[str] = mapped_column(Text, nullable=True)
-    created_at = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 class SettingsPreset(Base):
@@ -82,7 +82,7 @@ class Worker(Base):
     # JSON list of channel IDs this worker handles, e.g. [-100123, -100456]
     channels: Mapped[str] = mapped_column(Text, nullable=True, default="[]")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 async def init_db():

@@ -5,392 +5,384 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Панель управления AutoPoster CMS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
+        /* ═══════════════════════════════════════
+           NEON CYBERPUNK — Design System
+        ═══════════════════════════════════════ */
         :root {
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: rgba(255, 255, 255, 0.1);
+            --bg:         #050010;
+            --surface:    #0b0020;
+            --surface-2:  #11002d;
+            --surface-3:  #18003d;
+            --border:     rgba(0,245,255,0.07);
+            --border-2:   rgba(0,245,255,0.16);
+            --border-3:   rgba(0,245,255,0.34);
+            --accent:     #00f5ff;
+            --accent-dim: rgba(0,245,255,0.08);
+            --accent-mid: rgba(0,245,255,0.18);
+            --pink:       #ff00aa;
+            --pink-dim:   rgba(255,0,170,0.08);
+            --red:        #ff2255;
+            --red-dim:    rgba(255,34,85,0.1);
+            --green:      #00ff88;
+            --green-dim:  rgba(0,255,136,0.1);
+            --blue:       #4da6ff;
+            --blue-dim:   rgba(77,166,255,0.1);
+            --amber:      #ffaa00;
+            --amber-dim:  rgba(255,170,0,0.1);
+            --purple:     #b060ff;
+            --purple-dim: rgba(176,96,255,0.1);
+            --text:       #ccd6f6;
+            --text-2:     #4a4a8a;
+            --text-3:     #22224a;
+            --mono:       'Share Tech Mono', 'Courier New', monospace;
+            --display:    'Orbitron', monospace;
+            --r:          2px;
+            --r-lg:       4px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at top right, #1e3a8a 0%, transparent 40%),
-                radial-gradient(circle at bottom left, #312e81 0%, transparent 40%);
-            background-attachment: fixed;
-            color: var(--text-main);
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(ellipse 60% 50% at 90% 0%,   rgba(0,245,255,0.08) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 50% at 0%  100%, rgba(255,0,170,0.07) 0%, transparent 55%),
+                linear-gradient(rgba(0,245,255,0.022) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,245,255,0.022) 1px, transparent 1px);
+            background-size: auto, auto, 44px 44px, 44px 44px;
+            background-attachment: fixed, fixed, fixed, fixed;
+            color: var(--text);
+            font-family: var(--mono);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 2rem;
+            padding: 2.5rem 2rem;
         }
 
-        .container {
-            width: 100%;
-            max-width: 1100px;
-            margin-top: 1rem;
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 3px,
+                rgba(0,0,0,0.07) 3px,
+                rgba(0,0,0,0.07) 4px
+            );
+            pointer-events: none; z-index: 9990;
         }
 
+        .container { width: 100%; max-width: 1200px; position: relative; z-index: 1; }
+
+        /* ── HEADER ── */
         .header {
-            text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.75rem;
+            border-bottom: 1px solid var(--border-2);
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
         }
-
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 0;
+            width: 140px; height: 2px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+            box-shadow: 0 0 12px var(--accent);
+        }
+        .header-left {}
+        .header-eyebrow {
+            font-family: var(--display);
+            font-size: 0.5rem; font-weight: 400;
+            letter-spacing: 0.32em; text-transform: uppercase;
+            color: var(--accent); margin-bottom: 0.6rem;
+            text-shadow: 0 0 12px rgba(0,245,255,0.9);
+        }
         .header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #60a5fa, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
+            font-family: var(--display);
+            font-size: 2.5rem; font-weight: 900;
+            color: var(--text); line-height: 1;
+            letter-spacing: 0.06em;
+            text-shadow: 0 0 30px rgba(0,245,255,0.12), 0 0 60px rgba(0,245,255,0.06);
+        }
+        .header h1 em {
+            font-style: normal; color: var(--pink);
+            text-shadow: 0 0 20px rgba(255,0,170,0.8), 0 0 40px rgba(255,0,170,0.4);
+        }
+        .header-meta {
+            font-size: 0.6rem; color: var(--text-2);
+            letter-spacing: 0.22em; text-transform: uppercase;
+            margin-top: 0.55rem;
+        }
+        .header-status {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-family: var(--display);
+            font-size: 0.55rem; color: var(--text-2);
+            letter-spacing: 0.12em; text-transform: uppercase;
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-2);
+            border-radius: var(--r);
+            background: var(--surface-2);
+            white-space: nowrap;
         }
 
-        .header p {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-        }
-
+        /* ── MAIN PANEL ── */
         .glass-panel {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
+            background: var(--surface);
+            border: 1px solid var(--border-2);
+            border-radius: var(--r-lg);
             padding: 2rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: inset 0 1px 0 rgba(0,245,255,0.04);
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
+        .glass-panel:hover { border-color: rgba(0,245,255,0.22); box-shadow: 0 0 24px rgba(0,245,255,0.04), inset 0 1px 0 rgba(0,245,255,0.04); }
 
-        /* Tabs */
+        /* ── TABS ── */
         .tabs {
             display: flex;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border);
             margin-bottom: 2rem;
+            gap: 0; overflow-x: auto; scrollbar-width: none;
         }
+        .tabs::-webkit-scrollbar { display: none; }
 
         .tab-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            padding: 1rem 1.5rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-bottom: 3px solid transparent;
+            background: none; border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-2);
+            padding: 0.8rem 1rem;
+            font-size: 0.55rem; font-weight: 400;
+            font-family: var(--display);
+            letter-spacing: 0.16em; text-transform: uppercase;
+            cursor: pointer; transition: all 0.15s; white-space: nowrap;
         }
-
-        .tab-btn:hover {
-            color: white;
-        }
-
+        .tab-btn:hover { color: var(--accent); background: rgba(0,245,255,0.03); }
         .tab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
+            color: var(--accent); border-bottom-color: var(--accent);
+            text-shadow: 0 0 10px rgba(0,245,255,0.8);
         }
 
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease-out;
+        /* ── CONTENT ANIMATION ── */
+        .tab-content { display: none; animation: fadeUp 0.28s ease-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .form-row {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-row>div {
-            flex: 1;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
+        /* ── FORMS ── */
+        .form-row { display: flex; gap: 1.25rem; margin-bottom: 1.5rem; }
+        .form-row > div { flex: 1; }
+        .form-group { margin-bottom: 1.5rem; }
         .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #e2e8f0;
+            display: block; margin-bottom: 0.45rem;
+            font-size: 0.55rem; font-weight: 400;
+            font-family: var(--display);
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: var(--text-2);
         }
-
         .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: white;
-            font-size: 1rem;
-            transition: all 0.2s ease;
+            width: 100%; padding: 0.7rem 0.9rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border-2);
+            border-radius: var(--r);
+            color: var(--text); font-size: 0.88rem; font-family: var(--mono);
+            transition: all 0.15s;
         }
-
         .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            outline: none; border-color: var(--accent);
+            background: var(--surface-3);
+            box-shadow: 0 0 0 3px rgba(0,245,255,0.08), 0 0 18px rgba(0,245,255,0.1);
         }
-
         select.form-control {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1.2em;
+            appearance: none; cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234a4a8a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 0.8rem center; background-size: 1em;
         }
+        textarea.form-control { resize: vertical; min-height: 110px; line-height: 1.65; }
 
-        textarea.form-control {
-            resize: vertical;
-            min-height: 100px;
-        }
-
+        /* ── TOGGLE SWITCH ── */
         .switch-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1.5rem;
-            background: rgba(15, 23, 42, 0.4);
-            border-radius: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.1rem 1.4rem;
+            background: var(--surface-2);
+            border-radius: var(--r);
             margin-bottom: 1rem;
-            border: 1px solid var(--primary);
+            border: 1px solid var(--border-2);
+            border-left: 3px solid var(--accent);
+            box-shadow: inset 4px 0 12px rgba(0,245,255,0.05);
         }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #475569;
-            transition: .4s;
-            border-radius: 34px;
+            position: absolute; cursor: pointer; inset: 0;
+            background: var(--surface-3); border: 1px solid var(--border-2);
+            border-radius: 26px; transition: 0.3s;
         }
-
         .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+            position: absolute; content: "";
+            height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background: var(--text-2); transition: 0.3s; border-radius: 50%;
         }
+        input:checked + .slider { background: var(--accent-dim); border-color: var(--accent); box-shadow: 0 0 10px rgba(0,245,255,0.4); }
+        input:checked + .slider:before { transform: translateX(24px); background: var(--accent); box-shadow: 0 0 8px var(--accent); }
 
-        input:checked+.slider {
-            background-color: var(--primary);
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(26px);
-        }
-
+        /* ── BUTTONS ── */
         .btn {
-            display: inline-block;
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            text-align: center;
+            display: inline-block; width: 100%;
+            padding: 0.85rem 1.5rem;
+            background: transparent;
+            color: var(--accent); border: 1px solid var(--accent);
+            border-radius: var(--r);
+            font-size: 0.6rem; font-weight: 400; font-family: var(--display);
+            letter-spacing: 0.16em; text-transform: uppercase;
+            cursor: pointer; transition: all 0.15s; text-align: center;
+            text-shadow: 0 0 8px rgba(0,245,255,0.6);
         }
-
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.6);
+            background: rgba(0,245,255,0.1);
+            box-shadow: 0 0 24px rgba(0,245,255,0.35), inset 0 0 20px rgba(0,245,255,0.06);
+            transform: translateY(-1px);
         }
-
         .btn-small {
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            border-radius: 6px;
-            width: auto;
-            margin-right: 0.5rem;
+            padding: 0.42rem 0.85rem; font-size: 0.55rem;
+            border-radius: var(--r); width: auto; margin-right: 0.35rem;
         }
+        .btn-green { color: var(--green); border-color: var(--green); background: transparent; text-shadow: 0 0 8px rgba(0,255,136,0.6); }
+        .btn-green:hover { background: rgba(0,255,136,0.1); box-shadow: 0 0 24px rgba(0,255,136,0.35); }
+        .btn-red { color: var(--red); border-color: var(--red); background: transparent; text-shadow: 0 0 8px rgba(255,34,85,0.6); }
+        .btn-red:hover { background: rgba(255,34,85,0.1); box-shadow: 0 0 24px rgba(255,34,85,0.35); }
+        .btn-gray { color: var(--text-2); border-color: var(--border-2); background: transparent; text-shadow: none; }
+        .btn-gray:hover { background: var(--surface-3); color: var(--text); border-color: var(--border-3); box-shadow: none; transform: none; }
 
-        .btn-green {
-            background: #10b981;
-        }
-
-        .btn-red {
-            background: #ef4444;
-        }
-
-        .btn-gray {
-            background: #475569;
-        }
-
-        /* Table */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
+        /* ── TABLE ── */
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.8rem; }
+        th, td { text-align: left; padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); }
         th {
-            color: var(--text-muted);
-            font-weight: 600;
+            color: var(--text-2); font-size: 0.52rem; font-weight: 400;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            background: var(--surface-2); font-family: var(--display);
         }
+        tr:hover td { background: rgba(0,245,255,0.025); }
 
-        tr:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
+        /* ── BADGES ── */
         .badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            display: inline-block; padding: 0.18rem 0.5rem;
+            border-radius: 2px; font-size: 0.55rem; font-weight: 400;
+            font-family: var(--display);
+            letter-spacing: 0.1em; text-transform: uppercase;
         }
+        .badge-pending       { background: var(--surface-3); color: var(--text-2); border: 1px solid var(--border-2); }
+        .badge-approved      { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(77,166,255,0.18); }
+        .badge-pending_review{ background: var(--amber-dim);  color: var(--amber);  border: 1px solid rgba(255,170,0,0.18); }
+        .badge-ready_to_post { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(0,255,136,0.18); }
+        .badge-posted        { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(176,96,255,0.18); }
+        .badge-rejected      { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(255,34,85,0.18); }
 
-        .badge-pending {
-            background: rgba(148, 163, 184, 0.2);
-            color: #94a3b8;
-        }
-
-        .badge-approved {
-            background: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-        }
-
-        /* pending AI gen */
-        .badge-pending_review {
-            background: rgba(245, 158, 11, 0.2);
-            color: #fbbf24;
-        }
-
-        .badge-ready_to_post {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-        }
-
-        .badge-posted {
-            background: rgba(139, 92, 246, 0.2);
-            color: #a78bfa;
-        }
-
-        .badge-rejected {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-        }
-
-        /* Moderation UI */
-        .mod-layout {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
+        /* ── MODERATION ── */
+        .mod-layout { display: flex; flex-direction: column; gap: 1.25rem; }
         .mod-active-post {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid var(--primary);
-            border-radius: 16px;
-            padding: 1.5rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border-2); border-left: 3px solid var(--accent);
+            border-radius: var(--r); padding: 1.5rem;
+            box-shadow: inset 4px 0 12px rgba(0,245,255,0.05);
         }
-
-        .mod-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
+        .mod-list { display: flex; flex-direction: column; gap: 0.35rem; }
         .mod-item {
-            background: rgba(30, 41, 59, 0.5);
-            padding: 1rem;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: var(--surface-2); padding: 0.9rem 1.1rem;
+            border-radius: var(--r); border: 1px solid var(--border);
+            cursor: pointer; transition: all 0.15s;
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .mod-item:hover { border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 14px rgba(0,245,255,0.07); }
 
-        .mod-item:hover {
-            background: rgba(59, 130, 246, 0.2);
-            border-color: var(--primary);
-        }
-
+        /* ── TOAST ── */
         #toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #10b981;
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            font-weight: 500;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s ease;
-            pointer-events: none;
-            z-index: 1000;
+            position: fixed; bottom: 1.5rem; right: 1.5rem;
+            background: var(--surface-2); border: 1px solid var(--green); color: var(--green);
+            padding: 0.75rem 1.4rem; border-radius: var(--r);
+            font-size: 0.6rem; font-weight: 400; font-family: var(--display);
+            letter-spacing: 0.12em; text-transform: uppercase;
+            opacity: 0; transform: translateY(10px); transition: all 0.22s ease;
+            pointer-events: none; z-index: 9992;
+            box-shadow: 0 0 24px rgba(0,255,136,0.25);
+            text-shadow: 0 0 8px rgba(0,255,136,0.7);
         }
+        #toast.show { opacity: 1; transform: translateY(0); }
+        #toast.error { border-color: var(--red); color: var(--red); box-shadow: 0 0 24px rgba(255,34,85,0.25); text-shadow: 0 0 8px rgba(255,34,85,0.7); }
 
-        #toast.show {
-            opacity: 1;
-            transform: translateY(0);
+        /* ── SPINNER ── */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner {
+            display: inline-block; width: 12px; height: 12px;
+            border: 2px solid rgba(0,245,255,0.2); border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.65s linear infinite; vertical-align: middle;
         }
+        .btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
 
-        #toast.error {
-            background: #ef4444;
+        /* ── ACCORDION ── */
+        .accordion-item { border-radius: var(--r); overflow: hidden; border: 1px solid var(--border-2); }
+        .accordion-header {
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            padding: 0.9rem 1.25rem; background: var(--surface-2);
+            font-size: 0.55rem; font-weight: 400; font-family: var(--display);
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: var(--text-2); user-select: none; transition: all 0.15s;
+        }
+        .accordion-header:hover { background: var(--surface-3); color: var(--accent); text-shadow: 0 0 8px rgba(0,245,255,0.6); }
+        .accordion-header.open { color: var(--accent); text-shadow: 0 0 8px rgba(0,245,255,0.6); }
+        .accordion-arrow { transition: transform 0.3s; font-size: 0.65rem; }
+        .accordion-header.open .accordion-arrow { transform: rotate(180deg); }
+        .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+        .accordion-body.open { max-height: 1400px; }
+        .accordion-inner { padding: 1.25rem 1.25rem 0.75rem; }
+
+        /* ── NEWS FILTER ── */
+        .filter-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem; }
+        .filter-pill {
+            padding: 0.22rem 0.7rem; border-radius: 2px;
+            font-size: 0.55rem; font-weight: 400; font-family: var(--display);
+            letter-spacing: 0.14em; text-transform: uppercase;
+            cursor: pointer; border: 1px solid var(--border-2);
+            background: transparent; color: var(--text-2); transition: all 0.12s;
+        }
+        .filter-pill:hover { border-color: var(--accent); color: var(--accent); text-shadow: 0 0 6px rgba(0,245,255,0.5); }
+        .filter-pill.active { background: rgba(0,245,255,0.1); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(0,245,255,0.15); text-shadow: 0 0 7px rgba(0,245,255,0.7); }
+        .news-search {
+            width: 100%; padding: 0.62rem 0.9rem;
+            background: var(--surface-2); border: 1px solid var(--border-2);
+            border-radius: var(--r); color: var(--text);
+            font-size: 0.83rem; font-family: var(--mono);
+            margin-bottom: 0.75rem; transition: all 0.15s;
+        }
+        .news-search:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,245,255,0.08), 0 0 18px rgba(0,245,255,0.1); }
+        .news-search::placeholder { color: var(--text-3); }
+
+        /* ── TOPOLOGY ── */
+        .topo-node {
+            position: absolute; background: var(--surface-2);
+            border: 1px solid var(--border-2); border-radius: var(--r);
+            padding: 0.62rem 0.85rem; display: flex; align-items: center; gap: 0.6rem;
+            cursor: default; transition: border-color 0.35s, box-shadow 0.3s;
+        }
+        .topo-node:hover { box-shadow: 0 0 20px rgba(0,245,255,0.15); }
+        .topo-node-icon { font-size: 1.15rem; flex-shrink: 0; line-height: 1; }
+        .topo-node-body { flex: 1; min-width: 0; }
+        .topo-node-title { font-family: var(--display); font-weight: 400; font-size: 0.65rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.1em; }
+        .topo-node-subtitle { font-size: 0.65rem; margin-top: 0.08rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #topo-tooltip {
+            position: fixed; background: var(--surface-3); border: 1px solid var(--border-2);
+            border-radius: var(--r); padding: 0.6rem 0.85rem;
+            font-size: 0.72rem; color: var(--text-2); font-family: var(--mono);
+            pointer-events: none; z-index: 9993; display: none; max-width: 240px;
+            line-height: 1.7; box-shadow: 0 0 24px rgba(0,245,255,0.1);
         }
     </style>
 </head>
@@ -399,8 +391,15 @@
 
     <div class="container">
         <div class="header">
-            <h1>Donut inc</h1>
-            <p>Created by Mr_batnik</p>
+            <div class="header-left">
+                <div class="header-eyebrow">AUTOPOSTER CMS / v2.0</div>
+                <h1>Donut<em>inc</em></h1>
+                <div class="header-meta">Signal processing station — Mr_batnik</div>
+            </div>
+            <div class="header-status" id="header-bot-status">
+                <span id="header-status-dot" style="width:7px;height:7px;border-radius:50%;background:var(--text-3);flex-shrink:0;"></span>
+                <span id="header-status-text">Checking…</span>
+            </div>
         </div>
 
         <div class="glass-panel">
@@ -412,34 +411,35 @@
                 <button class="tab-btn" onclick="openTab(event, 'Archive')">🗄️ Архив</button>
                 <button class="tab-btn" onclick="openTab(event, 'Workers')">🖥️ Воркеры</button>
                 <button class="tab-btn" onclick="openTab(event, 'Analytics')">📊 Аналитика</button>
+                <button class="tab-btn" onclick="openTab(event, 'Topology')">🔗 Топология</button>
             </div>
 
             <!-- TAB 0: DASHBOARD -->
             <div id="Dashboard" class="tab-content active">
                 <div class="form-row">
                     <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
-                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">GPU Load</h3>
+                        <h3 style="color: var(--text-2); margin-bottom: 0.5rem;">GPU Load</h3>
                         <div style="font-size: 2.5rem; font-weight: 700; color: #34d399;" id="gpu-load">--%</div>
                     </div>
                     <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
-                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">VRAM Usage</h3>
+                        <h3 style="color: var(--text-2); margin-bottom: 0.5rem;">VRAM Usage</h3>
                         <div style="font-size: 2.5rem; font-weight: 700; color: #a78bfa;" id="vram-load">--%</div>
-                        <small id="vram-details" style="color: var(--text-muted);">-- / -- MB</small>
+                        <small id="vram-details" style="color: var(--text-2);">-- / -- MB</small>
                     </div>
                     <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
-                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">RAM Usage</h3>
+                        <h3 style="color: var(--text-2); margin-bottom: 0.5rem;">RAM Usage</h3>
                         <div style="font-size: 2.5rem; font-weight: 700; color: #60a5fa;" id="ram-load">--%</div>
-                        <small id="ram-details" style="color: var(--text-muted);">-- / -- MB</small>
+                        <small id="ram-details" style="color: var(--text-2);">-- / -- MB</small>
                     </div>
                 </div>
 
-                <div class="glass-panel" style="padding: 2rem; margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; border: 2px solid var(--primary);">
+                <div class="glass-panel" style="padding: 2rem; margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; border: 2px solid var(--accent);">
                     <div>
                         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
                             <h2 style="margin: 0;">⚡ Управление автопостером</h2>
                             <div id="status-dot" style="width: 15px; height: 15px; border-radius: 50%; background-color: #ef4444; box-shadow: 0 0 10px #ef4444; transition: all 0.3s ease;"></div>
                         </div>
-                        <p style="color: var(--text-muted);">Запуск/остановка полного цикла публикации новостей.</p>
+                        <p style="color: var(--text-2);">Запуск/остановка полного цикла публикации новостей.</p>
                     </div>
                     <div style="display: flex; gap: 1rem;">
                         <button class="btn btn-small btn-green" style="padding: 1rem 2.5rem; font-size: 1.1rem;" onclick="setBotState(true)">▶ Старт</button>
@@ -480,115 +480,137 @@
                 <form id="settings-form">
                     <div style="display: none;">
                         <input type="checkbox" id="is_active" {% if setting and setting.is_active %}checked{% endif %}>
-                        <input type="hidden" id="image_source" value="none">
+                        <input type="hidden" id="image_source" value="{{ setting.image_source if setting and setting.image_source else 'none' }}">
                     </div>
 
-                    <!-- LLM Provider -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="llm_source">Источник AI</label>
-                            <select id="llm_source" class="form-control" onchange="toggleApiField()">
-                                <option value="ollama" {% if setting and setting.llm_source=='ollama' %}selected{% endif %}>Ollama (локально)</option>
-                                <option value="openai" {% if setting and setting.llm_source=='openai' %}selected{% endif %}>OpenAI</option>
-                                <option value="openrouter" {% if setting and setting.llm_source=='openrouter' %}selected{% endif %}>OpenRouter</option>
-                                <option value="anthropic" {% if setting and setting.llm_source=='anthropic' %}selected{% endif %}>Anthropic Claude</option>
-                                <option value="gemini" {% if setting and setting.llm_source=='gemini' %}selected{% endif %}>Google Gemini</option>
-                            </select>
+                    <!-- Accordion 1: AI Generation -->
+                    <div class="accordion-item" style="margin-bottom: 1rem;">
+                        <div class="accordion-header open" onclick="toggleAccordion('acc-llm')">
+                            <span>🤖 Генерация текста</span>
+                            <span class="accordion-arrow">▼</span>
                         </div>
-                        <div class="form-group" id="apikey_group" style="{% if not setting or setting.llm_source == 'ollama' %}display:none;{% endif %}">
-                            <label for="api_key">API Ключ</label>
-                            <input type="password" id="api_key" class="form-control" value="" placeholder="sk-... / ant-... / AIza...">
-                        </div>
-                    </div>
-
-                    <!-- Base URL (OpenAI / OpenRouter only) -->
-                    <div class="form-group" id="apibase_group" style="{% if not setting or setting.llm_source not in ('openai','openrouter') %}display:none;{% endif %}">
-                        <label for="api_base_url">API Base URL <small style="color:var(--text-muted);">(оставьте пустым для дефолтного)</small></label>
-                        <input type="text" id="api_base_url" class="form-control"
-                            value="{{ setting.api_base_url if setting and setting.api_base_url else '' }}"
-                            placeholder="https://openrouter.ai/api/v1">
-                    </div>
-
-                    <!-- Model + Schedule -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="model">AI Модель</label>
-                            <!-- Ollama: select from API; others: type-in with datalist -->
-                            <select id="model_select" class="form-control"
-                                data-current="{{ setting.model if setting and setting.model else 'llama3.2' }}"
-                                style="{% if setting and setting.llm_source and setting.llm_source != 'ollama' %}display:none;{% endif %}">
-                                <option value="{{ setting.model if setting and setting.model else 'llama3.2' }}">
-                                    {{ setting.model if setting and setting.model else 'llama3.2' }} (текущая)
-                                </option>
-                            </select>
-                            <input type="text" id="model_text" class="form-control"
-                                value="{{ setting.model if setting and setting.model else '' }}"
-                                placeholder="gpt-4o / claude-sonnet-4-6 / gemini-1.5-flash"
-                                style="{% if not setting or setting.llm_source == 'ollama' %}display:none;{% endif %}">
-                            <small id="model_hint" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem;"></small>
-                        </div>
-
-                        <!-- Schedule mode toggle -->
-                        <div class="form-group">
-                            <label>Режим расписания</label>
-                            <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
-                                <button type="button" id="btn_mode_interval"
-                                    class="btn btn-small {% if not setting or not setting.schedule_mode or setting.schedule_mode == 'interval' %}btn-green{% else %}btn-gray{% endif %}"
-                                    onclick="setScheduleMode('interval')">⚡ Интервал</button>
-                                <button type="button" id="btn_mode_weekly"
-                                    class="btn btn-small {% if setting and setting.schedule_mode == 'weekly' %}btn-green{% else %}btn-gray{% endif %}"
-                                    onclick="setScheduleMode('weekly')">📅 По дням</button>
-                            </div>
-                            <input type="hidden" id="schedule_mode" value="{{ setting.schedule_mode if setting and setting.schedule_mode else 'interval' }}">
-
-                            <div id="interval_section" style="{% if setting and setting.schedule_mode == 'weekly' %}display:none;{% endif %}">
-                                <input type="number" id="schedule_interval" class="form-control"
-                                    value="{{ setting.schedule_interval if setting else '60' }}" min="1"
-                                    placeholder="Интервал (минуты)">
-                                <small style="color:var(--text-muted); font-size:0.8rem;">Минут между публикациями</small>
-                            </div>
-
-                            <div id="weekly_section" style="{% if not setting or setting.schedule_mode != 'weekly' %}display:none;{% endif %}">
-                                <div id="schedule-grid" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
-                                <small style="color:var(--text-muted); font-size:0.8rem; margin-top:0.4rem; display:block;">Время UTC. Окно публикации — 2 минуты после слота.</small>
+                        <div class="accordion-body open" id="acc-llm">
+                            <div class="accordion-inner">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="llm_source">Источник AI</label>
+                                        <select id="llm_source" class="form-control" onchange="toggleApiField()">
+                                            <option value="ollama" {% if setting and setting.llm_source=='ollama' %}selected{% endif %}>Ollama (локально)</option>
+                                            <option value="openai" {% if setting and setting.llm_source=='openai' %}selected{% endif %}>OpenAI</option>
+                                            <option value="openrouter" {% if setting and setting.llm_source=='openrouter' %}selected{% endif %}>OpenRouter</option>
+                                            <option value="anthropic" {% if setting and setting.llm_source=='anthropic' %}selected{% endif %}>Anthropic Claude</option>
+                                            <option value="gemini" {% if setting and setting.llm_source=='gemini' %}selected{% endif %}>Google Gemini</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="apikey_group" style="{% if not setting or setting.llm_source == 'ollama' %}display:none;{% endif %}">
+                                        <label for="api_key">API Ключ</label>
+                                        <div style="display:flex; gap:0.5rem; align-items:center;">
+                                            <input type="password" id="api_key" class="form-control" value="" placeholder="sk-... / ant-... / AIza...">
+                                            <button type="button" class="btn btn-small btn-gray" style="width:auto;flex-shrink:0;padding:0.75rem 0.9rem;" onclick="toggleKeyVisibility()" title="Показать/скрыть ключ">👁</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="apibase_group" style="{% if not setting or setting.llm_source not in ('openai','openrouter') %}display:none;{% endif %}">
+                                    <label for="api_base_url">API Base URL <small style="color:var(--text-2);">(оставьте пустым для дефолтного)</small></label>
+                                    <input type="text" id="api_base_url" class="form-control"
+                                        value="{{ setting.api_base_url if setting and setting.api_base_url else '' }}"
+                                        placeholder="https://openrouter.ai/api/v1">
+                                </div>
+                                <div class="form-group">
+                                    <label>AI Модель</label>
+                                    <select id="model_select" class="form-control"
+                                        data-current="{{ setting.model if setting and setting.model else 'llama3.2' }}"
+                                        style="{% if setting and setting.llm_source and setting.llm_source != 'ollama' %}display:none;{% endif %}">
+                                        <option value="{{ setting.model if setting and setting.model else 'llama3.2' }}">
+                                            {{ setting.model if setting and setting.model else 'llama3.2' }} (текущая)
+                                        </option>
+                                    </select>
+                                    <input type="text" id="model_text" class="form-control"
+                                        value="{{ setting.model if setting and setting.model else '' }}"
+                                        placeholder="gpt-4o / claude-sonnet-4-6 / gemini-1.5-flash"
+                                        style="{% if not setting or setting.llm_source == 'ollama' %}display:none;{% endif %}">
+                                    <small id="model_hint" style="color: var(--text-2); font-size: 0.8rem; margin-top: 0.3rem; display:block;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="prompt">Системный промпт</label>
+                                    <textarea id="prompt" class="form-control" style="min-height:120px;" placeholder="Оформи эту новость красиво...">{{ setting.prompt if setting else '' }}</textarea>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="language">Язык поста</label>
-                            <select id="language" class="form-control">
-                                <option value="RU" {% if setting and setting.language=='RU' %}selected{% endif %}>Русский</option>
-                                <option value="EN" {% if setting and setting.language=='EN' %}selected{% endif %}>English</option>
-                            </select>
+                    <!-- Accordion 2: Schedule + Channels -->
+                    <div class="accordion-item" style="margin-bottom: 1rem;">
+                        <div class="accordion-header open" onclick="toggleAccordion('acc-schedule')">
+                            <span>📅 Расписание и публикация</span>
+                            <span class="accordion-arrow">▼</span>
                         </div>
-                        <div class="form-group">
-                            <label for="post_style">Стиль написания</label>
-                            <select id="post_style" class="form-control">
-                                <option value="informative" {% if setting and setting.post_style=='informative' %}selected{% endif %}>Информативный</option>
-                                <option value="casual" {% if setting and setting.post_style=='casual' %}selected{% endif %}>Свободный / Блогер</option>
-                                <option value="clickbait" {% if setting and setting.post_style=='clickbait' %}selected{% endif %}>Клипабельный / Эмоциональный</option>
-                                <option value="formal" {% if setting and setting.post_style=='formal' %}selected{% endif %}>Сухой / Формальный</option>
-                            </select>
+                        <div class="accordion-body open" id="acc-schedule">
+                            <div class="accordion-inner">
+                                <div class="form-group">
+                                    <label>Режим расписания</label>
+                                    <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+                                        <button type="button" id="btn_mode_interval"
+                                            class="btn btn-small {% if not setting or not setting.schedule_mode or setting.schedule_mode == 'interval' %}btn-green{% else %}btn-gray{% endif %}"
+                                            onclick="setScheduleMode('interval')">⚡ Интервал</button>
+                                        <button type="button" id="btn_mode_weekly"
+                                            class="btn btn-small {% if setting and setting.schedule_mode == 'weekly' %}btn-green{% else %}btn-gray{% endif %}"
+                                            onclick="setScheduleMode('weekly')">📅 По дням</button>
+                                    </div>
+                                    <input type="hidden" id="schedule_mode" value="{{ setting.schedule_mode if setting and setting.schedule_mode else 'interval' }}">
+                                    <div id="interval_section" style="{% if setting and setting.schedule_mode == 'weekly' %}display:none;{% endif %}">
+                                        <input type="number" id="schedule_interval" class="form-control"
+                                            value="{{ setting.schedule_interval if setting else '60' }}" min="1"
+                                            placeholder="Интервал (минуты)">
+                                        <small style="color:var(--text-2); font-size:0.8rem;">Минут между публикациями</small>
+                                    </div>
+                                    <div id="weekly_section" style="{% if not setting or setting.schedule_mode != 'weekly' %}display:none;{% endif %}">
+                                        <div id="schedule-grid" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+                                        <small style="color:var(--text-2); font-size:0.8rem; margin-top:0.4rem; display:block;">Время UTC. Окно публикации — 2 минуты после слота.</small>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="target_channels">ID каналов для публикации (JSON массив)</label>
+                                    <input type="text" id="target_channels" class="form-control"
+                                        value="{{ setting.target_channels if setting and setting.target_channels else '[]' }}"
+                                        onchange="updateConnectedChannels()">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="prompt">Системный промпт (инструкция для ИИ)</label>
-                        <textarea id="prompt" class="form-control" placeholder="Оформи эту новость красиво...">{{ setting.prompt if setting else '' }}</textarea>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="target_channels">ID каналов для публикации (JSON массив)</label>
-                            <input type="text" id="target_channels" class="form-control"
-                                value="{{ setting.target_channels if setting and setting.target_channels else '[]' }}">
+                    <!-- Accordion 3: Extra -->
+                    <div class="accordion-item" style="margin-bottom: 1rem;">
+                        <div class="accordion-header" onclick="toggleAccordion('acc-extra')">
+                            <span>⚙️ Дополнительно</span>
+                            <span class="accordion-arrow">▼</span>
                         </div>
-                        <div class="form-group">
-                            <label for="extra_admins">Доп. Админы (ID)</label>
-                            <input type="text" id="extra_admins" class="form-control"
-                                value="{{ setting.extra_admins if setting and setting.extra_admins else '[]' }}">
+                        <div class="accordion-body" id="acc-extra">
+                            <div class="accordion-inner">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="language">Язык поста</label>
+                                        <select id="language" class="form-control">
+                                            <option value="RU" {% if setting and setting.language=='RU' %}selected{% endif %}>Русский</option>
+                                            <option value="EN" {% if setting and setting.language=='EN' %}selected{% endif %}>English</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="post_style">Стиль написания</label>
+                                        <select id="post_style" class="form-control">
+                                            <option value="informative" {% if setting and setting.post_style=='informative' %}selected{% endif %}>Информативный</option>
+                                            <option value="casual" {% if setting and setting.post_style=='casual' %}selected{% endif %}>Свободный / Блогер</option>
+                                            <option value="clickbait" {% if setting and setting.post_style=='clickbait' %}selected{% endif %}>Клипабельный / Эмоциональный</option>
+                                            <option value="formal" {% if setting and setting.post_style=='formal' %}selected{% endif %}>Сухой / Формальный</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="extra_admins">Доп. Админы (ID, JSON массив)</label>
+                                    <input type="text" id="extra_admins" class="form-control"
+                                        value="{{ setting.extra_admins if setting and setting.extra_admins else '[]' }}">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -604,7 +626,7 @@
                 <div class="switch-container">
                     <div>
                         <h3 style="margin-bottom: 0.2rem;">Авто-пропуск новостей к ИИ</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Если включено, ИИ сам забирает свежие
+                        <p style="color: var(--text-2); font-size: 0.9rem;">Если включено, ИИ сам забирает свежие
                             "сырые" новости на генерацию текста.</p>
                     </div>
                     <label class="switch"><input type="checkbox" id="auto_approve_news" onchange="saveSettingsGlobal()"
@@ -615,10 +637,20 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h2>Сырые новости (Источники)</h2>
                     <div>
-                        <button class="btn btn-small btn-gray" onclick="forceScrape()">⚡ Запустить парсер</button>
+                        <button class="btn btn-small btn-gray" id="btn-scrape" onclick="forceScrape()">⚡ Запустить парсер</button>
                         <button class="btn btn-small btn-red" onclick="clearNewsDatabase()">🗑 Очистить базу</button>
-                        <button class="btn btn-small" onclick="fetchNewsList()">🔄 Обновить</button>
+                        <button class="btn btn-small" id="btn-refresh-news" onclick="fetchNewsList()">🔄 Обновить</button>
                     </div>
+                </div>
+                <input class="news-search" id="news-search" placeholder="🔍 Поиск по заголовку или источнику..." oninput="applyNewsFilter(this.value)">
+                <div class="filter-pills">
+                    <button class="filter-pill active" id="pill-all" onclick="setNewsFilter('all', this)">Все</button>
+                    <button class="filter-pill" id="pill-pending" onclick="setNewsFilter('pending', this)">Сырые</button>
+                    <button class="filter-pill" id="pill-approved" onclick="setNewsFilter('approved', this)">В работе</button>
+                    <button class="filter-pill" id="pill-pending_review" onclick="setNewsFilter('pending_review', this)">У модератора</button>
+                    <button class="filter-pill" id="pill-ready_to_post" onclick="setNewsFilter('ready_to_post', this)">Готово</button>
+                    <button class="filter-pill" id="pill-posted" onclick="setNewsFilter('posted', this)">Опубликовано</button>
+                    <button class="filter-pill" id="pill-rejected" onclick="setNewsFilter('rejected', this)">Отклонено</button>
                 </div>
                 <div style="overflow-x: auto;">
                     <table id="news-table">
@@ -644,7 +676,7 @@
                 <div class="switch-container" style="border-color: #10b981;">
                     <div>
                         <h3 style="margin-bottom: 0.2rem;">Авто-публикация готовых постов</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Если включено, посты сразу отправляются
+                        <p style="color: var(--text-2); font-size: 0.9rem;">Если включено, посты сразу отправляются
                             в Телеграм, **МИНУЯ** эту модерацию.</p>
                     </div>
                     <label class="switch"><input type="checkbox" id="auto_post" onchange="saveSettingsGlobal()" {% if
@@ -657,7 +689,7 @@
                 </div>
 
                 <div class="mod-layout" id="mod-layout-container">
-                    <div style="text-align: center; color: var(--text-muted); padding: 3rem;">Загрузка...</div>
+                    <div style="text-align: center; color: var(--text-2); padding: 3rem;">Загрузка...</div>
                 </div>
             </div>
 
@@ -688,8 +720,11 @@
 
             <!-- TAB 5: WORKERS -->
             <div id="Workers" class="tab-content">
-                <h2 style="margin-bottom:1rem;">🖥️ Удалённые воркеры</h2>
-                <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.95rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                    <h2>🖥️ Удалённые воркеры</h2>
+                    <button class="btn btn-small" id="btn-refresh-workers" onclick="fetchWorkers()">🔄 Обновить</button>
+                </div>
+                <p style="color:var(--text-2); margin-bottom:1.5rem; font-size:0.95rem;">
                     Воркер — отдельный ПК с запущенным <code>worker_service</code>. Каждый воркер имеет свой Telegram-токен и публикует в назначенные ему каналы.
                     Оркестратор автоматически отправляет задачи на воркер (push), если у него есть нужный канал.
                 </p>
@@ -744,22 +779,22 @@
             <div id="Analytics" class="tab-content">
                 <div class="form-row">
                     <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
-                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">Всего сгенерировано</h3>
+                        <h3 style="color: var(--text-2); margin-bottom: 0.5rem;">Всего сгенерировано</h3>
                         <div style="font-size: 2.5rem; font-weight: 700; color: #a78bfa;" id="stat-total">0</div>
                     </div>
                     <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
-                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">Опубликовано</h3>
+                        <h3 style="color: var(--text-2); margin-bottom: 0.5rem;">Опубликовано</h3>
                         <div style="font-size: 2.5rem; font-weight: 700; color: #10b981;" id="stat-posted">0</div>
                     </div>
                     <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
-                        <h3 style="color: var(--text-muted); margin-bottom: 0.5rem;">Отклонено</h3>
+                        <h3 style="color: var(--text-2); margin-bottom: 0.5rem;">Отклонено</h3>
                         <div style="font-size: 2.5rem; font-weight: 700; color: #ef4444;" id="stat-rejected">0</div>
                     </div>
                 </div>
 
                 <div class="glass-panel" style="margin-top: 1.5rem; padding: 1.5rem; border-left: 4px solid #fbbf24;">
                     <h3 style="margin-bottom: 1rem;">Просмотры и ER (Ограничения Telegram API)</h3>
-                    <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+                    <p style="color: var(--text-2); font-size: 0.95rem; line-height: 1.6;">
                         ⚠️ <strong>Внимание:</strong> Стандартный Telegram Bot API <b>не имеет методов</b> для получения количества просмотров сообщений в каналах. Для реализации реальных дашбордов с пересылками (Forwards), ER (Engagement Rate) и просмотрами необходимо авторизовать клиентское приложение (Userbot) через MTProto, например с помощью <code>Pyrogram</code> или <code>Telethon</code>, работающее параллельно с этим ботом. То, что вы видите ниже - это базовая статистика работы нейросети в системе.
                     </p>
                 </div>
@@ -771,9 +806,35 @@
                     </div>
                 </div>
             </div>
+
+            <!-- TAB 7: TOPOLOGY -->
+            <div id="Topology" class="tab-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <h2>🔗 Топология пайплайна</h2>
+                    <button class="btn btn-small btn-gray" id="btn-topo-refresh" onclick="fetchTopology()">🔄 Обновить</button>
+                </div>
+                <p style="color:var(--text-2); margin-bottom:1.5rem; font-size:0.9rem;">
+                    Визуальная схема потока данных: источник AI → оркестратор → воркеры → каналы. Воркеры пингуются автоматически каждые 30 сек.
+                </p>
+                <div id="topology-container" style="position:relative; min-height:560px; background:rgba(15,23,42,0.5); border-radius:16px; border:1px solid var(--border-color); overflow:hidden; padding:1.5rem;">
+                    <svg id="topology-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;"></svg>
+                    <div id="topology-nodes" style="position:relative;z-index:1;width:100%;height:100%;"></div>
+                    <div id="topology-loading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--text-2);">
+                        <span class="spinner" style="width:20px;height:20px;border-width:3px;"></span>
+                        <div style="margin-top:0.75rem;">Загрузка топологии...</div>
+                    </div>
+                </div>
+                <div style="margin-top:0.85rem; display:flex; flex-wrap:wrap; gap:1rem; align-items:center; font-size:0.82rem; color:var(--text-2);">
+                    <span style="display:flex;align-items:center;gap:0.4rem;"><span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span>Онлайн</span>
+                    <span style="display:flex;align-items:center;gap:0.4rem;"><span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span>Офлайн</span>
+                    <span style="display:flex;align-items:center;gap:0.4rem;"><span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>Проверка</span>
+                    <span style="display:flex;align-items:center;gap:0.4rem;"><span style="width:10px;height:10px;border-radius:50%;background:#475569;display:inline-block;"></span>Неизвестно</span>
+                </div>
+            </div>
         </div>
     </div>
 
+    <div id="topo-tooltip"></div>
     <div id="toast">Действие выполнено!</div>
 
     <script>
@@ -792,18 +853,29 @@
         function updateStatusDot(isActive) {
             const dot = document.getElementById('status-dot');
             if (dot) {
-                const color = isActive ? '#10b981' : '#ef4444'; // Green or Red
+                const color = isActive ? '#10b981' : '#ef4444';
                 dot.style.backgroundColor = color;
                 dot.style.boxShadow = `0 0 10px ${color}`;
             }
+            const hdot = document.getElementById('header-status-dot');
+            const htxt = document.getElementById('header-status-text');
+            if (hdot) {
+                hdot.style.background = isActive ? 'var(--green)' : 'var(--red)';
+                hdot.style.boxShadow = isActive ? '0 0 6px var(--green)' : '0 0 6px var(--red)';
+            }
+            if (htxt) htxt.textContent = isActive ? 'Bot Active' : 'Bot Stopped';
         }
 
         async function setBotState(isActive) {
             const dot = document.getElementById('status-dot');
             if (dot) {
-                dot.style.backgroundColor = '#fbbf24'; // Yellow
+                dot.style.backgroundColor = '#fbbf24';
                 dot.style.boxShadow = '0 0 10px #fbbf24';
             }
+            const hdot = document.getElementById('header-status-dot');
+            const htxt = document.getElementById('header-status-text');
+            if (hdot) { hdot.style.background = '#fbbf24'; hdot.style.boxShadow = '0 0 6px #fbbf24'; }
+            if (htxt) htxt.textContent = 'Updating…';
             document.getElementById('is_active').checked = isActive;
             await saveSettingsGlobal();
         }
@@ -832,7 +904,7 @@
                     const ul = document.getElementById('active-llm-models');
                     ul.innerHTML = '';
                     if (!data.models || data.models.length === 0) {
-                        ul.innerHTML = '<li style="color: var(--text-muted); font-weight: normal;">Нет активных моделей</li>';
+                        ul.innerHTML = '<li style="color: var(--text-2); font-weight: normal;">Нет активных моделей</li>';
                     } else {
                         data.models.forEach(m => {
                             ul.innerHTML += `<li>⚡ ${m}</li>`;
@@ -896,7 +968,7 @@
                 const ul = document.getElementById('connected-channels');
                 ul.innerHTML = '';
                 if (!Array.isArray(channels) || channels.length === 0) {
-                    ul.innerHTML = '<li style="color: var(--text-muted); font-weight: normal;">Нет каналов</li>';
+                    ul.innerHTML = '<li style="color: var(--text-2); font-weight: normal;">Нет каналов</li>';
                 } else {
                     channels.forEach(ch => {
                         ul.innerHTML += `<li>📡 ID: ${ch}</li>`;
@@ -927,15 +999,58 @@
             evt.currentTarget.className += " active";
             if (tabName === 'NewsDB' || tabName === 'Moderation' || tabName === 'Archive') fetchNewsList();
             if (tabName === 'Workers') fetchWorkers();
+            if (tabName === 'Analytics') fetchAnalytics();
+            if (tabName === 'Topology') { fetchTopology(); startTopoPolling(); }
+        }
+
+        async function fetchAnalytics() {
+            try {
+                const res = await apiFetch('/api/analytics');
+                if (!res.ok) return;
+                const data = await res.json();
+                document.getElementById('stat-total').textContent = data.total ?? 0;
+                document.getElementById('stat-posted').textContent = data.posted ?? 0;
+                document.getElementById('stat-rejected').textContent = data.rejected ?? 0;
+                // Render chart
+                const canvas = document.getElementById('analyticsChart');
+                if (canvas && data.labels && data.data) {
+                    if (analyticsChartInst) analyticsChartInst.destroy();
+                    analyticsChartInst = new Chart(canvas.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Опубликовано',
+                                data: data.data,
+                                backgroundColor: 'rgba(167,139,250,0.7)',
+                                borderColor: '#a78bfa',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
+                                x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+            } catch (e) { console.error('Failed to fetch analytics', e); }
         }
 
         async function forceScrape() {
+            const btn = document.getElementById('btn-scrape');
+            if (btn) setLoading(btn, true);
             try {
                 showToast('Запускаем парсер, подождите...', false);
                 const res = await apiFetch('/api/force_scrape', { method: 'POST' });
                 if (res.ok) { showToast('Парсер успешно отработал!'); fetchNewsList(); }
                 else showToast('Ошибка запуска парсера', true);
             } catch (e) { showToast('Ошибка сети', true); }
+            finally { if (btn) setLoading(btn, false); }
         }
 
         async function clearNewsDatabase() {
@@ -970,8 +1085,8 @@
                 const row = document.createElement('div');
                 row.style.cssText = 'display:flex;align-items:center;gap:0.75rem;';
                 row.innerHTML = `
-                    <span style="width:28px;color:var(--text-muted);font-weight:600;flex-shrink:0;">${day.label}</span>
-                    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;flex:1;">${chips || '<span style="color:var(--text-muted);font-size:0.85rem;">нет слотов</span>'}</div>
+                    <span style="width:28px;color:var(--text-2);font-weight:600;flex-shrink:0;">${day.label}</span>
+                    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;flex:1;">${chips || '<span style="color:var(--text-2);font-size:0.85rem;">нет слотов</span>'}</div>
                     <button type="button" class="btn btn-small btn-gray" style="width:auto;padding:0.2rem 0.6rem;font-size:0.8rem;flex-shrink:0;" onclick="addSlot('${day.key}')">+ Добавить</button>`;
                 grid.appendChild(row);
             });
@@ -1055,12 +1170,14 @@
         // Workers
         // ---------------------------------------------------------------
         async function fetchWorkers() {
+            const btn = document.getElementById('btn-refresh-workers');
+            if (btn) setLoading(btn, true);
             try {
                 const res = await apiFetch('/api/workers');
                 const data = await res.json();
                 const tbody = document.getElementById('workers-body');
                 if (!data.workers || !data.workers.length) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Воркеры не добавлены</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-2);">Воркеры не добавлены</td></tr>';
                     return;
                 }
                 tbody.innerHTML = '';
@@ -1075,7 +1192,7 @@
                             <td>${w.id}</td>
                             <td><strong>${w.name}</strong></td>
                             <td><code style="color:#60a5fa;">${w.url}</code></td>
-                            <td style="font-size:0.8rem;color:var(--text-muted);">${channels}</td>
+                            <td style="font-size:0.8rem;color:var(--text-2);">${channels}</td>
                             <td id="w-status-${w.id}">${statusBadge}</td>
                             <td>
                                 <button class="btn btn-small btn-gray" onclick="pingWorker(${w.id})" style="margin-right:0.25rem;">📡 Пинг</button>
@@ -1084,6 +1201,7 @@
                         </tr>`;
                 });
             } catch (e) { console.error('fetchWorkers error', e); }
+            finally { if (btn) setLoading(btn, false); }
         }
 
         async function addWorker() {
@@ -1221,6 +1339,8 @@
         let currentlyEditingModId = null;
 
         async function fetchNewsList() {
+            const btn = document.getElementById('btn-refresh-news');
+            if (btn) setLoading(btn, true);
             try {
                 const res = await apiFetch('/api/news');
                 const data = await res.json();
@@ -1230,7 +1350,24 @@
             } catch (e) {
                 console.error(e);
                 showToast('Ошибка загрузки данных', true);
+            } finally {
+                if (btn) setLoading(btn, false);
             }
+        }
+
+        let activeNewsFilter = 'all';
+        let activeNewsSearch = '';
+
+        function setNewsFilter(filter, btn) {
+            activeNewsFilter = filter;
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderNewsTable();
+        }
+
+        function applyNewsFilter(searchVal) {
+            activeNewsSearch = (searchVal || '').toLowerCase();
+            renderNewsTable();
         }
 
         function renderNewsTable() {
@@ -1239,9 +1376,20 @@
             const tbodyArch = document.getElementById('archive-body');
             if (tbodyArch) tbodyArch.innerHTML = '';
 
-            // Only show raw or waiting news here, skip pending_review and archive
-            const articlesForTable = globalNewsData.filter(a => !['pending_review', 'posted', 'rejected'].includes(a.status));
-            const articlesForArchive = globalNewsData.filter(a => ['posted', 'rejected'].includes(a.status));
+            // Apply search + status filter
+            const searchTerm = activeNewsSearch;
+            const filterStatus = activeNewsFilter;
+            const matchesSearch = a => !searchTerm || a.title.toLowerCase().includes(searchTerm) || (a.source || '').toLowerCase().includes(searchTerm);
+
+            // When a specific filter is set, show all matching articles in the main table
+            let articlesForTable, articlesForArchive;
+            if (filterStatus !== 'all') {
+                articlesForTable = globalNewsData.filter(a => a.status === filterStatus && matchesSearch(a));
+                articlesForArchive = globalNewsData.filter(a => ['posted', 'rejected'].includes(a.status) && matchesSearch(a));
+            } else {
+                articlesForTable = globalNewsData.filter(a => !['pending_review', 'posted', 'rejected'].includes(a.status) && matchesSearch(a));
+                articlesForArchive = globalNewsData.filter(a => ['posted', 'rejected'].includes(a.status) && matchesSearch(a));
+            }
 
             if (articlesForTable.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">Нет новостей в базе.</td></tr>';
@@ -1261,7 +1409,7 @@
 
                     tr.innerHTML = `
                         <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-                        <td><a href="${a.url}" target="_blank" style="color:#60a5fa; text-decoration:none;"><strong>${a.title.substring(0, 80)}${a.title.length > 80 ? '...' : ''}</strong></a><br><small style="color:var(--text-muted);">${a.source || 'Источник'}</small></td>
+                        <td><a href="${a.url}" target="_blank" style="color:#60a5fa; text-decoration:none;"><strong>${a.title.substring(0, 80)}${a.title.length > 80 ? '...' : ''}</strong></a><br><small style="color:var(--text-2);">${a.source || 'Источник'}</small></td>
                         <td>${new Date(a.created_at).toLocaleString()}</td>
                         <td>${actionsHtml}</td>
                     `;
@@ -1293,7 +1441,7 @@
             const pendingPosts = globalNewsData.filter(a => a.status === 'pending_review');
 
             if (pendingPosts.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 3rem; background: rgba(15, 23, 42, 0.4); border-radius: 16px;">Пока нет сгенерированных постов ожидающих модерации.</div>';
+                container.innerHTML = '<div style="text-align: center; color: var(--text-2); padding: 3rem; background: rgba(15, 23, 42, 0.4); border-radius: 16px;">Пока нет сгенерированных постов ожидающих модерации.</div>';
                 return;
             }
 
@@ -1310,7 +1458,7 @@
             let html = `
                 <div class="mod-active-post">
                     <h3 style="margin-bottom: 0.5rem; color: #60a5fa;">${activePost.title}</h3>
-                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;"><a href="${activePost.url}" target="_blank" style="color:var(--text-muted);">Перейти к оригиналу новости ↗</a></p>
+                    <p style="color: var(--text-2); font-size: 0.9rem; margin-bottom: 1rem;"><a href="${activePost.url}" target="_blank" style="color:var(--text-2);">Перейти к оригиналу новости ↗</a></p>
                     <textarea id="mod-editor" class="form-control" style="min-height: 350px; font-size: 1.1rem; margin-bottom: 1.5rem;">${activePost.generated_text || ''}</textarea>
                     
                     <div style="display: flex; gap: 1rem; justify-content: flex-end;">
@@ -1327,7 +1475,7 @@
                         <div class="mod-item" onclick="selectModPost(${p.id})">
                             <div style="flex:1;">
                                 <strong style="display:block; margin-bottom: 0.3rem;">${p.title}</strong>
-                                <small style="color: var(--text-muted);">${p.generated_text ? p.generated_text.substring(0, 80) : ''}...</small>
+                                <small style="color: var(--text-2);">${p.generated_text ? p.generated_text.substring(0, 80) : ''}...</small>
                             </div>
                             <span class="badge badge-pending_review">Ожидает</span>
                         </div>
@@ -1377,6 +1525,261 @@
                 const res = await apiFetch(`/api/news/${id}`, { method: 'DELETE' });
                 if (res.ok) fetchNewsList();
             } catch (e) { showToast('Ошибка удаления', true); }
+        }
+
+        // ---------------------------------------------------------------
+        // UI Utilities
+        // ---------------------------------------------------------------
+        function setLoading(btn, loading) {
+            if (loading) {
+                btn.dataset.origText = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner"></span>';
+                btn.disabled = true;
+            } else {
+                btn.innerHTML = btn.dataset.origText || btn.innerHTML;
+                btn.disabled = false;
+            }
+        }
+
+        function toggleAccordion(id) {
+            const body = document.getElementById(id);
+            const header = body.previousElementSibling;
+            body.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+
+        function toggleKeyVisibility() {
+            const inp = document.getElementById('api_key');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+        }
+
+        // ---------------------------------------------------------------
+        // Topology
+        // ---------------------------------------------------------------
+        let topologyData = { workers: [], settings: {}, ollamaModels: [] };
+        let workerOnlineStatus = {};
+        let topoPollingInterval = null;
+
+        function topoStatusColor(st) {
+            return { online: '#10b981', offline: '#ef4444', checking: '#f59e0b', error: '#ef4444' }[st] || '#475569';
+        }
+
+        async function fetchTopology() {
+            const loading = document.getElementById('topology-loading');
+            const nodesEl = document.getElementById('topology-nodes');
+            const svgEl = document.getElementById('topology-svg');
+            if (loading) loading.style.display = 'block';
+            if (nodesEl) nodesEl.innerHTML = '';
+            if (svgEl) svgEl.innerHTML = '';
+            try {
+                const [wRes, sRes, mRes] = await Promise.all([
+                    apiFetch('/api/workers'), apiFetch('/api/settings'), apiFetch('/api/system/ollama_active')
+                ]);
+                topologyData.workers = ((await wRes.json()).workers) || [];
+                topologyData.settings = await sRes.json();
+                topologyData.ollamaModels = ((await mRes.json()).models) || [];
+            } catch(e) { console.error('fetchTopology', e); }
+            if (loading) loading.style.display = 'none';
+            renderTopology();
+            pingTopologyWorkers();
+        }
+
+        function renderTopology() {
+            const container = document.getElementById('topology-container');
+            const nodesEl = document.getElementById('topology-nodes');
+            const svgEl = document.getElementById('topology-svg');
+            if (!nodesEl || !svgEl || !container) return;
+            nodesEl.innerHTML = '';
+            svgEl.innerHTML = '';
+
+            const s = topologyData.settings;
+            const workers = (topologyData.workers || []).filter(w => w.is_active);
+            let channels = [];
+            try { channels = JSON.parse(s.target_channels || '[]'); } catch(e) {}
+
+            const cW = container.clientWidth - 48;
+            const nW = 164, nH = 78;
+            const nodePos = {};
+
+            const llmSource = s.llm_source || 'ollama';
+            const llmModel = (s.model || '?');
+            const showImg = s.image_source && s.image_source !== 'none';
+
+            // Row 1: LLM nodes
+            const r1y = 24;
+            const llmX = showImg ? cW * 0.28 - nW / 2 : cW / 2 - nW / 2;
+            const llmOk = topologyData.ollamaModels.length > 0 || llmSource !== 'ollama';
+            addTopoNode(nodesEl, 'n-llm', llmX, r1y, nW, nH, '🤖',
+                llmSource.charAt(0).toUpperCase() + llmSource.slice(1),
+                llmModel.length > 20 ? llmModel.slice(0, 20) + '…' : llmModel,
+                llmOk ? '#10b981' : '#f59e0b',
+                `Генерация текста\nПровайдер: ${llmSource}\nМодель: ${llmModel}`);
+            nodePos['n-llm'] = { cx: llmX + nW / 2, cy: r1y + nH / 2 };
+
+            if (showImg) {
+                const imgX = cW * 0.72 - nW / 2;
+                addTopoNode(nodesEl, 'n-img', imgX, r1y, nW, nH, '🖼️', 'Image Source', s.image_source, '#475569', `Источник изображений:\n${s.image_source}`);
+                nodePos['n-img'] = { cx: imgX + nW / 2, cy: r1y + nH / 2 };
+            }
+
+            // Row 2: Orchestrator
+            const r2y = r1y + nH + 100;
+            const orchX = cW / 2 - nW / 2;
+            const isActive = s.is_active;
+            addTopoNode(nodesEl, 'n-orch', orchX, r2y, nW, nH, '✦', 'Admin Bot', isActive ? 'Активен' : 'Остановлен',
+                isActive ? '#10b981' : '#ef4444',
+                `Оркестратор\nСтатус: ${isActive ? 'Работает' : 'Остановлен'}\nLLM: ${llmSource}`);
+            nodePos['n-orch'] = { cx: orchX + nW / 2, cy: r2y + nH / 2 };
+
+            // Row 3: Workers + direct node
+            const r3y = r2y + nH + 100;
+            const workerChannels = {};
+            workers.forEach(w => { try { workerChannels[w.id] = JSON.parse(w.channels || '[]'); } catch(e) { workerChannels[w.id] = []; } });
+            const assignedChs = new Set(Object.values(workerChannels).flat().map(String));
+            const directChs = channels.filter(ch => !assignedChs.has(String(ch)));
+            const totalW3 = workers.length + (directChs.length > 0 ? 1 : 0);
+            const wsp = totalW3 > 1 ? Math.min(210, (cW - nW) / (totalW3 - 1)) : 0;
+            const wStartX = totalW3 > 1 ? (cW - ((totalW3 - 1) * wsp + nW)) / 2 : cW / 2 - nW / 2;
+
+            workers.forEach((w, i) => {
+                const wx = wStartX + i * wsp;
+                const st = workerOnlineStatus[w.id] || 'unknown';
+                const color = topoStatusColor(st);
+                const sub = st === 'checking' ? '○ Проверка…' : st === 'online' ? '● Online' : st === 'offline' ? '● Offline' : '● ?';
+                addTopoNode(nodesEl, `n-w-${w.id}`, wx, r3y, nW, nH, '🖥️', w.name, sub, color,
+                    `Воркер: ${w.name}\nURL: ${w.url}\nКаналы: ${(workerChannels[w.id] || []).join(', ') || 'нет'}`);
+                nodePos[`n-w-${w.id}`] = { cx: wx + nW / 2, cy: r3y + nH / 2 };
+            });
+            if (directChs.length > 0) {
+                const di = workers.length;
+                const dx = wStartX + di * wsp;
+                addTopoNode(nodesEl, 'n-direct', dx, r3y, nW, nH, '📡', 'Прямая отправка', `${directChs.length} кан.`, '#3b82f6',
+                    `Каналы без воркера:\n${directChs.join('\n')}`);
+                nodePos['n-direct'] = { cx: dx + nW / 2, cy: r3y + nH / 2 };
+            }
+
+            // Row 4: Channels
+            const r4y = r3y + nH + 90;
+            if (channels.length > 0) {
+                const chNW = 150, chNH = 68;
+                const csp = channels.length > 1 ? Math.min(180, (cW - chNW) / (channels.length - 1)) : 0;
+                const cStartX = channels.length > 1 ? (cW - ((channels.length - 1) * csp + chNW)) / 2 : cW / 2 - chNW / 2;
+                channels.forEach((ch, i) => {
+                    const cx2 = cStartX + i * csp;
+                    const key = `n-ch-${String(ch).replace(/-/g, 'm')}`;
+                    const label = String(ch).length > 16 ? '…' + String(ch).slice(-13) : String(ch);
+                    addTopoNode(nodesEl, key, cx2, r4y, chNW, chNH, '📢', 'TG Channel', label, '#3b82f6', `Telegram канал\nID: ${ch}`);
+                    nodePos[key] = { cx: cx2 + chNW / 2, cy: r4y + chNH / 2 };
+                });
+            }
+
+            // Resize container
+            const totalH = channels.length > 0 ? r4y + nH + 30 : r3y + nH + 30;
+            container.style.minHeight = (totalH + 24) + 'px';
+
+            // Draw connections after layout
+            requestAnimationFrame(() => {
+                drawTopoEdges(svgEl, nodePos, workers, workerChannels, directChs, channels, showImg, isActive);
+            });
+        }
+
+        function addTopoNode(parent, id, x, y, w, h, icon, title, sub, color, tooltip) {
+            const el = document.createElement('div');
+            el.id = id; el.className = 'topo-node';
+            el.style.left = x + 'px'; el.style.top = y + 'px';
+            el.style.width = w + 'px'; el.style.height = h + 'px';
+            el.style.borderColor = color;
+            el.dataset.tooltip = tooltip || '';
+            el.innerHTML = `<div class="topo-node-icon">${icon}</div><div class="topo-node-body"><div class="topo-node-title">${title}</div><div class="topo-node-subtitle" style="color:${color};">${sub}</div></div>`;
+            el.addEventListener('mouseenter', topoShowTip);
+            el.addEventListener('mousemove', topoMoveTip);
+            el.addEventListener('mouseleave', topoHideTip);
+            parent.appendChild(el);
+        }
+
+        function drawTopoEdges(svg, pos, workers, workerChannels, directChs, channels, showImg, isActive) {
+            const line = (x1, y1, x2, y2, color, dashed) => {
+                const el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                el.setAttribute('x1', x1); el.setAttribute('y1', y1);
+                el.setAttribute('x2', x2); el.setAttribute('y2', y2);
+                el.setAttribute('stroke', color); el.setAttribute('stroke-width', '2');
+                el.setAttribute('opacity', '0.55');
+                if (dashed) el.setAttribute('stroke-dasharray', '6,4');
+                svg.appendChild(el);
+            };
+            const orch = pos['n-orch'], llm = pos['n-llm'], img = pos['n-img'];
+            if (orch && llm) line(orch.cx, orch.cy, llm.cx, llm.cy, isActive ? '#10b981' : '#475569', !isActive);
+            if (orch && img && showImg) line(orch.cx, orch.cy, img.cx, img.cy, '#475569', true);
+            workers.forEach(w => {
+                const wp = pos[`n-w-${w.id}`];
+                if (orch && wp) line(orch.cx, orch.cy, wp.cx, wp.cy, topoStatusColor(workerOnlineStatus[w.id] || 'unknown'));
+                (workerChannels[w.id] || []).forEach(ch => {
+                    const cp = pos[`n-ch-${String(ch).replace(/-/g, 'm')}`];
+                    if (wp && cp) line(wp.cx, wp.cy, cp.cx, cp.cy, topoStatusColor(workerOnlineStatus[w.id] || 'unknown'));
+                });
+            });
+            const dp = pos['n-direct'];
+            if (orch && dp) line(orch.cx, orch.cy, dp.cx, dp.cy, '#3b82f6');
+            directChs.forEach(ch => {
+                const cp = pos[`n-ch-${String(ch).replace(/-/g, 'm')}`];
+                if (dp && cp) line(dp.cx, dp.cy, cp.cx, cp.cy, '#3b82f6');
+            });
+        }
+
+        function topoShowTip(e) {
+            const tip = document.getElementById('topo-tooltip');
+            if (!tip) return;
+            tip.innerHTML = (e.currentTarget.dataset.tooltip || '').replace(/\n/g, '<br>');
+            tip.style.display = 'block';
+            tip.style.left = (e.clientX + 14) + 'px';
+            tip.style.top = (e.clientY - 8) + 'px';
+        }
+        function topoMoveTip(e) {
+            const tip = document.getElementById('topo-tooltip');
+            if (tip && tip.style.display !== 'none') {
+                tip.style.left = (e.clientX + 14) + 'px';
+                tip.style.top = (e.clientY - 8) + 'px';
+            }
+        }
+        function topoHideTip() {
+            const tip = document.getElementById('topo-tooltip');
+            if (tip) tip.style.display = 'none';
+        }
+
+        async function pingTopologyWorkers() {
+            for (const w of topologyData.workers) {
+                workerOnlineStatus[w.id] = 'checking';
+                const nodeEl = document.getElementById(`n-w-${w.id}`);
+                if (nodeEl) {
+                    nodeEl.style.borderColor = '#f59e0b';
+                    const sub = nodeEl.querySelector('.topo-node-subtitle');
+                    if (sub) { sub.style.color = '#f59e0b'; sub.textContent = '○ Проверка…'; }
+                }
+            }
+            for (const w of topologyData.workers) {
+                try {
+                    const ctrl = new AbortController();
+                    const timer = setTimeout(() => ctrl.abort(), 4000);
+                    const r = await fetch(`${w.url}/health`, { signal: ctrl.signal });
+                    clearTimeout(timer);
+                    workerOnlineStatus[w.id] = r.ok ? 'online' : 'error';
+                } catch(e) { workerOnlineStatus[w.id] = 'offline'; }
+                const nodeEl = document.getElementById(`n-w-${w.id}`);
+                if (nodeEl) {
+                    const color = topoStatusColor(workerOnlineStatus[w.id]);
+                    nodeEl.style.borderColor = color;
+                    const sub = nodeEl.querySelector('.topo-node-subtitle');
+                    if (sub) { sub.style.color = color; sub.textContent = workerOnlineStatus[w.id] === 'online' ? '● Online' : '● Offline'; }
+                }
+            }
+            // Redraw edges with updated colors
+            const svgEl = document.getElementById('topology-svg');
+            if (svgEl) renderTopology();
+        }
+
+        function startTopoPolling() {
+            if (topoPollingInterval) clearInterval(topoPollingInterval);
+            topoPollingInterval = setInterval(pingTopologyWorkers, 30000);
         }
     </script>
 </body>
